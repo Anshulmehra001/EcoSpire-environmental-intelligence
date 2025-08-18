@@ -1,0 +1,278 @@
+/* Button Component Styles */
+.terra-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-semibold);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-bounce);
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.terra-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(74, 124, 35, 0.2);
+}
+
+.terra-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button Variants */
+.terra-button--primary {
+  background: linear-gradient(135deg, var(--color-forest-primary) 0%, var(--color-nature-green) 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.terra-button--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--color-forest-deep) 0%, var(--color-forest-primary) 100%);
+}
+
+.terra-button--primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.terra-button--secondary {
+  background: rgba(168, 230, 163, 0.1);
+  color: var(--color-forest-primary);
+  border: 2px solid var(--color-mint-light);
+}
+
+.terra-button--secondary:hover:not(:disabled) {
+  background: rgba(168, 230, 163, 0.2);
+  border-color: var(--color-nature-green);
+  transform: scale(1.02);
+}
+
+.terra-button--outline {
+  background: transparent;
+  color: var(--color-nature-green);
+  border: 2px solid var(--color-nature-green);
+}
+
+.terra-button--outline:hover:not(:disabled) {
+  background: var(--color-nature-green);
+  color: var(--color-white);
+  transform: translateY(-1px);
+}
+
+.terra-button--ghost {
+  background: transparent;
+  color: var(--color-nature-green);
+  border: none;
+}
+
+.terra-button--ghost:hover:not(:disabled) {
+  background: rgba(168, 230, 163, 0.1);
+  transform: scale(1.05);
+}
+
+.terra-button--danger {
+  background: linear-gradient(135deg, var(--color-warning-red) 0%, #d32f2f 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.terra-button--danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+}
+
+.terra-button--success {
+  background: linear-gradient(135deg, var(--color-success-green) 0%, #2E7D32 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.terra-button--success:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+}
+
+.terra-button--warning {
+  background: linear-gradient(135deg, var(--color-sunset-orange) 0%, #F57C00 100%);
+  color: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.terra-button--warning:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);
+}
+
+/* Button Sizes */
+.terra-button--xs {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-sm);
+}
+
+.terra-button--sm {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+}
+
+.terra-button--md {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-base);
+}
+
+.terra-button--lg {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  font-size: var(--font-size-lg);
+}
+
+.terra-button--xl {
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  font-size: var(--font-size-xl);
+  border-radius: var(--radius-xl);
+}
+
+/* Button States */
+.terra-button--loading {
+  pointer-events: none;
+}
+
+.terra-button--loading .terra-button__text {
+  opacity: 0.7;
+}
+
+.terra-button__spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.terra-button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.terra-button__text {
+  display: flex;
+  align-items: center;
+}
+
+/* Icon-only buttons */
+.terra-button--icon-only {
+  padding: var(--spacing-md);
+  aspect-ratio: 1;
+}
+
+.terra-button--icon-only .terra-button__text {
+  display: none;
+}
+
+/* Full width button */
+.terra-button--full {
+  width: 100%;
+}
+
+/* Floating Action Button */
+.terra-button--fab {
+  border-radius: var(--radius-full);
+  padding: var(--spacing-lg);
+  aspect-ratio: 1;
+  box-shadow: var(--shadow-xl);
+  position: fixed;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  z-index: var(--z-fixed);
+}
+
+.terra-button--fab:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-2xl);
+}
+
+/* Button Group */
+.terra-button-group {
+  display: inline-flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.terra-button-group .terra-button {
+  border-radius: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.terra-button-group .terra-button:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.terra-button-group .terra-button:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+  border-right: none;
+}
+
+.terra-button-group .terra-button:hover:not(:disabled) {
+  transform: none;
+  z-index: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .terra-button--lg {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
+  }
+  
+  .terra-button--xl {
+    padding: var(--spacing-lg) var(--spacing-xl);
+    font-size: var(--font-size-lg);
+  }
+  
+  .terra-button--fab {
+    bottom: var(--spacing-lg);
+    right: var(--spacing-lg);
+    padding: var(--spacing-md);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .terra-button--primary {
+    background: var(--color-forest-deep);
+    border: 2px solid var(--color-white);
+  }
+  
+  .terra-button--secondary {
+    border-width: 3px;
+  }
+  
+  .terra-button--outline {
+    border-width: 3px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .terra-button {
+    transition: none;
+  }
+  
+  .terra-button:hover:not(:disabled) {
+    transform: none;
+  }
+}

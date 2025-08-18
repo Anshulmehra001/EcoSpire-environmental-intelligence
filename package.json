@@ -1,0 +1,41 @@
+{
+  "name": "eco-guardian",
+  "version": "1.0.0",
+  "description": "Revolutionary cross-platform environmental awareness and action platform",
+  "private": true,
+  "workspaces": [
+    "web",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\" \"npm run dev:mobile\"",
+    "dev:mobile": "cd mobile && npm start",
+    "dev:web": "cd web && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:shared && npm run build:web && npm run build:mobile",
+    "build:shared": "cd shared && npm run build",
+    "build:web": "cd web && npm run build",
+    "build:mobile": "cd mobile && npm run build",
+    "test": "npm run test:shared && npm run test:web && npm run test:backend",
+    "test:shared": "cd shared && npm test",
+    "test:web": "cd web && npm test",
+    "test:backend": "cd backend && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.3"
+  },
+  "keywords": [
+    "environment",
+    "sustainability",
+    "carbon-tracking",
+    "climate-change",
+    "eco-friendly",
+    "green-technology"
+  ],
+  "author": "EcoSphere Team",
+  "license": "MIT"
+}

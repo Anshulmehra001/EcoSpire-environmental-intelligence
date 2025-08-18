@@ -1,0 +1,445 @@
+/* Main App Container */
+.terra-app {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Sidebar */
+.terra-sidebar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  color: #333;
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 100;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.terra-sidebar.open {
+  width: 280px;
+}
+
+.terra-sidebar.closed {
+  width: 70px;
+}
+
+/* Logo Section */
+.terra-logo {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  min-height: 90px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
+.logo-icon {
+  font-size: 2.5rem;
+}
+
+.logo-text h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #2E7D32;
+}
+
+.logo-text p {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Navigation */
+.terra-nav {
+  flex: 1;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.terra-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.terra-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terra-nav::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  margin: 3px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  color: #333;
+}
+
+.nav-item:hover {
+  background: rgba(46, 125, 50, 0.1);
+  transform: translateX(2px);
+}
+
+.nav-item.active {
+  background: rgba(46, 125, 50, 0.15);
+  border-left: 3px solid #2E7D32;
+  color: #2E7D32;
+}
+
+.nav-icon {
+  font-size: 1.5rem;
+  margin-right: 14px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.nav-content {
+  flex: 1;
+}
+
+.nav-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.nav-desc {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  color: #666;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer-stats {
+  display: flex;
+  gap: 16px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.stat-icon {
+  font-size: 1.3rem;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #2E7D32;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+/* Main Content */
+.terra-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f8fdf8 0%, #f0f9f0 100%);
+}
+
+/* Header */
+.terra-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(76, 175, 80, 0.1);
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+  flex: 1;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 8px 0;
+  color: #2d5016;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.title-icon {
+  font-size: 2.2rem;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: #4a7c23;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.header-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  transition: all 0.3s ease;
+}
+
+.header-stat:hover {
+  background: rgba(76, 175, 80, 0.15);
+  transform: translateY(-2px);
+}
+
+.header-stat span {
+  font-size: 1.6rem;
+}
+
+.header-stat > div > div:first-child {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #2d5016;
+}
+
+.header-stat > div > div:last-child {
+  font-size: 0.8rem;
+  color: #4a7c23;
+  font-weight: 500;
+}
+
+/* Content Area */
+.terra-content {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  background: transparent;
+}
+
+.terra-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terra-content::-webkit-scrollbar-track {
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+.terra-content::-webkit-scrollbar-thumb {
+  background: rgba(76, 175, 80, 0.3);
+  border-radius: 4px;
+}
+
+.terra-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(76, 175, 80, 0.5);
+}
+
+/* Page Transition Animation */
+.terra-content > * {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .terra-sidebar.open {
+    width: 260px;
+  }
+  
+  .header-stats {
+    gap: 16px;
+  }
+  
+  .header-stat {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .terra-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .terra-sidebar.open {
+    transform: translateX(0);
+    width: 280px;
+  }
+  
+  .terra-sidebar.closed {
+    transform: translateX(-100%);
+  }
+  
+  .terra-header {
+    padding: 20px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header-stats {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .header-stat {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 16px;
+  }
+  
+  .terra-content {
+    padding: 24px 20px;
+  }
+  
+  .page-title {
+    font-size: 1.6rem;
+  }
+  
+  .title-icon {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .terra-logo {
+    padding: 20px 16px;
+  }
+  
+  .logo-text h1 {
+    font-size: 1.3rem;
+  }
+  
+  .nav-item {
+    padding: 12px 16px;
+    margin: 2px 8px;
+  }
+  
+  .nav-name {
+    font-size: 0.9rem;
+  }
+  
+  .nav-desc {
+    font-size: 0.7rem;
+  }
+  
+  .header-stats {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .header-stat {
+    width: 100%;
+  }
+  
+  .terra-content {
+    padding: 20px 16px;
+  }
+}
+
+/* Focus States for Accessibility */
+.nav-item:focus,
+.sidebar-toggle:focus,
+.header-stat:focus {
+  outline: 2px solid #a8e6a3;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .terra-sidebar {
+    background: #2d5016;
+  }
+  
+  .nav-item.active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+/*
+ Global Button Styles */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Ensure all buttons have proper cursor */
+button:not(:disabled) {
+  cursor: pointer;
+}

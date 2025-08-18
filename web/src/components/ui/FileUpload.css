@@ -1,0 +1,331 @@
+/* FileUpload Component Styles */
+.terra-file-upload-wrapper {
+  width: 100%;
+}
+
+.terra-file-upload {
+  position: relative;
+  border: 2px dashed var(--color-mint-light);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(168, 230, 163, 0.05) 0%, rgba(232, 245, 232, 0.1) 100%);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.terra-file-upload:hover:not(.terra-file-upload--disabled) {
+  border-color: var(--color-nature-green);
+  background: rgba(168, 230, 163, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.terra-file-upload__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.terra-file-upload__content {
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.terra-file-upload__icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+  transition: transform var(--transition-normal);
+}
+
+.terra-file-upload:hover .terra-file-upload__icon {
+  transform: scale(1.1);
+}
+
+.terra-file-upload__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.terra-file-upload__primary {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-forest-primary);
+  margin: 0;
+}
+
+.terra-file-upload__secondary {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Upload Variants */
+.terra-file-upload--default {
+  /* Default styling already applied */
+}
+
+.terra-file-upload--compact {
+  .terra-file-upload__content {
+    padding: var(--spacing-lg);
+  }
+  
+  .terra-file-upload__icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .terra-file-upload__primary {
+    font-size: var(--font-size-base);
+  }
+}
+
+.terra-file-upload--minimal {
+  border-style: solid;
+  border-width: 1px;
+  background: var(--color-white);
+  
+  .terra-file-upload__content {
+    padding: var(--spacing-lg);
+    flex-direction: row;
+    text-align: left;
+  }
+  
+  .terra-file-upload__icon {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+}
+
+/* Upload States */
+.terra-file-upload--drag-active {
+  border-color: var(--color-nature-green);
+  background: rgba(168, 230, 163, 0.2);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+.terra-file-upload--drag-active .terra-file-upload__icon {
+  transform: scale(1.2);
+  animation: bounce 0.6s ease-in-out;
+}
+
+.terra-file-upload--has-files {
+  border-color: var(--color-success-green);
+  background: rgba(76, 175, 80, 0.05);
+}
+
+.terra-file-upload--disabled {
+  border-color: var(--color-gray-200);
+  background: var(--color-gray-50);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.terra-file-upload--disabled .terra-file-upload__primary {
+  color: var(--color-gray-400);
+}
+
+.terra-file-upload--disabled .terra-file-upload__secondary {
+  color: var(--color-gray-300);
+}
+
+/* File List */
+.terra-file-upload__files {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(74, 124, 35, 0.1);
+}
+
+.terra-file-upload__files-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-forest-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.terra-file-upload__files-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.terra-file-upload__file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md);
+  background: var(--color-eco-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-mint-light);
+  transition: all var(--transition-normal);
+}
+
+.terra-file-upload__file:hover {
+  background: var(--color-eco-lighter);
+  transform: translateX(4px);
+}
+
+.terra-file-upload__file-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.terra-file-upload__file-name {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-forest-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.terra-file-upload__file-size {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+}
+
+.terra-file-upload__file-remove {
+  background: var(--color-warning-red);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-full);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.terra-file-upload__file-remove:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.terra-file-upload__file-remove:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.3);
+}
+
+/* Progress Bar (for future enhancement) */
+.terra-file-upload__progress {
+  width: 100%;
+  height: 4px;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--spacing-xs);
+}
+
+.terra-file-upload__progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-success-green) 0%, var(--color-nature-green) 100%);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .terra-file-upload__content {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+  
+  .terra-file-upload__icon {
+    font-size: 2.5rem;
+  }
+  
+  .terra-file-upload__primary {
+    font-size: var(--font-size-base);
+  }
+  
+  .terra-file-upload__secondary {
+    font-size: var(--font-size-xs);
+  }
+  
+  .terra-file-upload--minimal .terra-file-upload__content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .terra-file-upload__file {
+    padding: var(--spacing-sm);
+  }
+  
+  .terra-file-upload__file-info {
+    gap: var(--spacing-xs);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .terra-file-upload {
+    border-width: 3px;
+    border-color: var(--color-forest-primary);
+  }
+  
+  .terra-file-upload--drag-active {
+    border-color: var(--color-forest-deep);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .terra-file-upload,
+  .terra-file-upload__icon,
+  .terra-file-upload__file,
+  .terra-file-upload__file-remove {
+    transition: none;
+  }
+  
+  .terra-file-upload:hover,
+  .terra-file-upload--drag-active {
+    transform: none;
+  }
+  
+  .terra-file-upload--drag-active .terra-file-upload__icon {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Focus States for Accessibility */
+.terra-file-upload:focus-within {
+  outline: 2px solid var(--color-nature-green);
+  outline-offset: 2px;
+}
+
+/* Animation for drag active state */
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.2);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0) scale(1.2);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0) scale(1.2);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0) scale(1.2);
+  }
+}
