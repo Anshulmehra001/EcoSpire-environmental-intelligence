@@ -13,10 +13,14 @@
 
 ## 🚀 Project Overview
 
-EcoSpire is a comprehensive environmental intelligence platform featuring **17 AI-powered tools** that address pressing environmental challenges. This platform transforms smartphones into scientific instruments, empowering communities to monitor, analyze, and protect their environment through cutting-edge AI technology.
+### 🌍 **Solving Problems for 7 Billion People**
+
+While most applications solve problems for specific user groups, **EcoSpire addresses the biggest challenge facing all 7 billion people on Earth: environmental collapse and climate change.**
+
+EcoSpire is a comprehensive environmental intelligence platform featuring **17 AI-powered tools** that transform any smartphone into a scientific instrument for environmental monitoring, analysis, and protection. This platform democratizes environmental science, empowering every person on the planet to take data-driven action against humanity's greatest existential threat.
 
 ### 🎯 Core Mission
-**"Democratizing Environmental Intelligence"** - Making advanced environmental monitoring accessible to everyone, everywhere.
+**"Democratizing Environmental Intelligence for 7 Billion People"** - Making advanced environmental monitoring accessible to everyone, everywhere, because the climate crisis affects us all.
 
 ## ✨ Key Features
 
