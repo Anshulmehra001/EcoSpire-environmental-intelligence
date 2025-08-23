@@ -2,7 +2,7 @@
 
 ## 📋 Project Information
 - **Project Name:** EcoSpire - Environmental Intelligence Platform
-- **Team/Individual:** [Your Name or Team Name]
+- **Team/Individual:** Aniket Mehra
 - **Category:** Wildcard / Freestyle  
 - **Repository:** https://github.com/Anshulmehra001/EcoSpire-environmental-intelligence
 - **Demo Video:** [YouTube/Vimeo URL - Create 3-minute demo]

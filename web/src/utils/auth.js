@@ -261,7 +261,16 @@ class AuthManager {
   }
 
   async logout() {
+    // Clear all user data and reset to guest mode
     this.setGuestMode();
+    
+    // Log the logout activity before clearing
+    await this.logActivity('User logged out', {
+      type: 'auth',
+      action: 'logout',
+      points: 0
+    });
+    
     return { success: true };
   }
 

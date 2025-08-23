@@ -377,14 +377,22 @@ function App() {
                 gap: '15px',
                 marginRight: '20px'
               }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'rgba(255,255,255,0.1)',
-                  padding: '8px 15px',
-                  borderRadius: '20px'
-                }}>
+                <div 
+                  onClick={() => handlePageChange('Profile')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(255,255,255,0.1)',
+                    padding: '8px 15px',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                  onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                  title="Click to view profile"
+                >
                   <span style={{ fontSize: '1.2rem' }}>{currentUser.avatar}</span>
                   <span style={{ color: 'white', fontWeight: 'bold' }}>
                     {currentUser.name}
@@ -401,27 +409,6 @@ function App() {
                     </span>
                   )}
                 </div>
-                
-                {!currentUser.isGuest && (
-                  <button
-                    onClick={() => {
-                      authManager.logout();
-                      handleAuthChange(authManager.getCurrentUser());
-                      handlePageChange('Dashboard');
-                    }}
-                    style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      border: 'none',
-                      padding: '8px 15px',
-                      borderRadius: '15px',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    🚪 Logout
-                  </button>
-                )}
               </div>
             )}
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { authManager } from '../utils/auth';
+import { imageHandler } from '../utils/imageHandler';
 
 const Community = ({ onNavigate }) => {
   const [posts, setPosts] = useState([]);
@@ -9,6 +10,10 @@ const Community = ({ onNavigate }) => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [communityStats, setCommunityStats] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [postType, setPostType] = useState('general');
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     loadCommunityData();
@@ -53,8 +58,13 @@ const Community = ({ onNavigate }) => {
           { author: 'EcoNewbie', content: 'How accurate is AquaLens? Thinking of trying it myself!', timestamp: Date.now() - 30 * 60 * 1000 }
         ],
         type: 'water_test',
-        location: 'Local Stream',
-        data: { ph: 7.2, nitrates: 15 }
+        location: 'Riverside Park Stream',
+        image: {
+          url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzg3Q0VFQiIvPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5KnIFdhdGVyIFRlc3QgU3RyaXA8L3RleHQ+PC9zdmc+',
+          name: 'water_test_strip.jpg',
+          size: 245760
+        },
+        data: { ph: 7.2, nitrates: 15, chlorine: 2.1 }
       },
       {
         id: 2,
@@ -68,8 +78,13 @@ const Community = ({ onNavigate }) => {
           { author: 'BioStudent', content: 'Can you share the recording? Would love to hear it!', timestamp: Date.now() - 1 * 60 * 60 * 1000 }
         ],
         type: 'biodiversity_scan',
-        location: 'City Park',
-        data: { speciesCount: 15, rareSpecies: ['Yellow Warbler'] }
+        location: 'Central City Park',
+        image: {
+          url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InNreSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM4N0NFRUIiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM5OERCOEMiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0idXJsKCNza3kpIi8+PGNpcmNsZSBjeD0iMzIwIiBjeT0iNjAiIHI9IjMwIiBmaWxsPSIjRkZENzAwIi8+PHJlY3QgeD0iMCIgeT0iMjAwIiB3aWR0aD0iNDAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzIyOEIyMiIvPjx0ZXh0IHg9IjIwMCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn6acIEJpcmQgV2F0Y2hpbmcgU3BvdDwvdGV4dD48L3N2Zz4=',
+          name: 'bird_watching_spot.jpg',
+          size: 189440
+        },
+        data: { speciesCount: 15, rareSpecies: 'Yellow Warbler' }
       },
       {
         id: 3,
@@ -83,7 +98,12 @@ const Community = ({ onNavigate }) => {
         ],
         type: 'plant_identification',
         location: 'Home Garden',
-        data: { species: 'Japanese Knotweed', threatLevel: 'High' }
+        image: {
+          url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzIyOEIyMiIvPjxwYXRoIGQ9Ik0xMDAsMjUwIEwxNTAsMTUwIEwyMDAsMjAwIEwyNTAsMTAwIEwzMDAsMTgwIiBzdHJva2U9IiM5OERCOEMiIHN0cm9rZS13aWR0aD0iOCIgZmlsbD0ibm9uZSIvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjE1MCIgcj0iMTUiIGZpbGw9IiNGRkQ3MDAiLz48Y2lyY2xlIGN4PSIyNTAiIGN5PSIxMDAiIHI9IjEyIiBmaWxsPSIjRkY2MzQ3Ii8+PHRleHQgeD0iMjAwIiB5PSIyODAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPvCfjL8gSW52YXNpdmUgUGxhbnQgRGV0ZWN0ZWQ8L3RleHQ+PC9zdmc+',
+          name: 'invasive_plant.jpg',
+          size: 156780
+        },
+        data: { species: 'Japanese Knotweed', confidence: 92 }
       },
       {
         id: 4,
@@ -104,6 +124,66 @@ const Community = ({ onNavigate }) => {
     localStorage.setItem('ecospire_community_posts', JSON.stringify(initialPosts));
   };
 
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setIsLoading(true);
+      const processedImage = await imageHandler.processImage(file, {
+        compress: true,
+        maxWidth: 800,
+        quality: 0.8
+      });
+
+      setSelectedImage({
+        file: file,
+        preview: processedImage.preview,
+        name: processedImage.original.name,
+        size: processedImage.processed.size,
+        processedData: processedImage
+      });
+    } catch (error) {
+      alert(`Image processing failed: ${error.message}`);
+      console.error('Image processing error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Simulate reverse geocoding
+          const locations = [
+            'Central Park, New York',
+            'Golden Gate Park, San Francisco',
+            'Hyde Park, London',
+            'Vondelpark, Amsterdam',
+            'Retiro Park, Madrid'
+          ];
+          const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+          setSelectedLocation(randomLocation);
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          setSelectedLocation('Location unavailable');
+        }
+      );
+    } else {
+      setSelectedLocation('Geolocation not supported');
+    }
+  };
+
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
@@ -116,6 +196,33 @@ const Community = ({ onNavigate }) => {
 
     setIsLoading(true);
 
+    // Process and store image
+    let imageData = null;
+    if (selectedImage) {
+      const imageId = `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Store image using imageHandler
+      const stored = imageHandler.storeImage(selectedImage.processedData, imageId);
+      
+      if (stored) {
+        imageData = {
+          id: imageId,
+          url: selectedImage.preview,
+          name: selectedImage.name,
+          size: selectedImage.size,
+          type: selectedImage.file.type
+        };
+      } else {
+        // Fallback to direct preview if storage fails
+        imageData = {
+          url: selectedImage.preview,
+          name: selectedImage.name,
+          size: selectedImage.size,
+          type: selectedImage.file.type
+        };
+      }
+    }
+
     const post = {
       id: Date.now(),
       author: currentUser.name,
@@ -124,23 +231,64 @@ const Community = ({ onNavigate }) => {
       content: newPost,
       likes: 0,
       comments: [],
-      type: 'general',
-      data: {}
+      type: postType,
+      location: selectedLocation || null,
+      image: imageData,
+      data: generatePostData(postType)
     };
 
     const updatedPosts = [post, ...posts];
     setPosts(updatedPosts);
     localStorage.setItem('ecospire_community_posts', JSON.stringify(updatedPosts));
 
-    // Log activity
+    // Log activity with enhanced points for media posts
+    const points = selectedImage ? 25 : 15;
     await authManager.logActivity('Posted in community', {
       type: 'community_post',
       content: newPost.substring(0, 50) + '...',
-      points: 15
+      hasImage: !!selectedImage,
+      postType: postType,
+      points: points
     });
 
+    // Reset form
     setNewPost('');
+    setSelectedImage(null);
+    setSelectedLocation('');
+    setPostType('general');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
     setIsLoading(false);
+  };
+
+  const generatePostData = (type) => {
+    switch (type) {
+      case 'water_test':
+        return {
+          ph: (6.5 + Math.random() * 2).toFixed(1),
+          nitrates: Math.floor(Math.random() * 20),
+          chlorine: (Math.random() * 3).toFixed(1)
+        };
+      case 'biodiversity_scan':
+        return {
+          speciesCount: Math.floor(Math.random() * 20) + 5,
+          rareSpecies: ['Rare Warbler', 'Endangered Butterfly'][Math.floor(Math.random() * 2)]
+        };
+      case 'carbon_reduction':
+        return {
+          co2Saved: Math.floor(Math.random() * 50) + 10,
+          reduction: Math.floor(Math.random() * 30) + 10
+        };
+      case 'plant_identification':
+        return {
+          species: 'Unknown Plant Species',
+          confidence: Math.floor(Math.random() * 30) + 70
+        };
+      default:
+        return {};
+    }
   };
 
   const handleLike = async (postId) => {
@@ -311,6 +459,33 @@ const Community = ({ onNavigate }) => {
             marginBottom: '30px'
           }}>
             <h3 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>Share Your Environmental Impact</h3>
+            
+            {/* Post Type Selector */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#2c3e50' }}>
+                Post Type:
+              </label>
+              <select
+                value={postType}
+                onChange={(e) => setPostType(e.target.value)}
+                disabled={!currentUser || currentUser.isGuest}
+                style={{
+                  padding: '8px 12px',
+                  border: '2px solid #e1e8ed',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  background: (!currentUser || currentUser.isGuest) ? '#f8f9fa' : 'white',
+                  cursor: (!currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                <option value="general">💬 General Discussion</option>
+                <option value="water_test">💧 Water Quality Test</option>
+                <option value="biodiversity_scan">🦜 Biodiversity Discovery</option>
+                <option value="plant_identification">🌿 Plant Identification</option>
+                <option value="carbon_reduction">🌳 Carbon Reduction</option>
+              </select>
+            </div>
+
             <form onSubmit={handlePostSubmit}>
               <textarea
                 value={newPost}
@@ -333,6 +508,97 @@ const Community = ({ onNavigate }) => {
                   background: (!currentUser || currentUser.isGuest) ? '#f8f9fa' : 'white'
                 }}
               />
+
+              {/* Image Preview */}
+              {selectedImage && (
+                <div style={{
+                  marginTop: '15px',
+                  padding: '15px',
+                  border: '2px dashed #3498db',
+                  borderRadius: '8px',
+                  background: '#f8f9fa'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <img
+                      src={selectedImage.preview}
+                      alt="Preview"
+                      style={{
+                        width: '80px',
+                        height: '80px',
+                        objectFit: 'cover',
+                        borderRadius: '8px',
+                        border: '2px solid #3498db'
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '500', color: '#2c3e50', marginBottom: '4px' }}>
+                        {selectedImage.name}
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#7f8c8d', marginBottom: '4px' }}>
+                        Original: {imageHandler.formatFileSize(selectedImage.file.size)}
+                        {selectedImage.size !== selectedImage.file.size && (
+                          <span style={{ color: '#27ae60', marginLeft: '8px' }}>
+                            → Compressed: {imageHandler.formatFileSize(selectedImage.size)}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#3498db' }}>
+                        ✅ Ready to upload
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      style={{
+                        background: '#e74c3c',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '30px',
+                        height: '30px',
+                        cursor: 'pointer',
+                        fontSize: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      title="Remove image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Location Display */}
+              {selectedLocation && (
+                <div style={{
+                  marginTop: '10px',
+                  padding: '10px',
+                  background: '#e8f4fd',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>📍</span>
+                  <span style={{ color: '#2c3e50' }}>{selectedLocation}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLocation('')}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#7f8c8d',
+                      cursor: 'pointer',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
@@ -340,39 +606,60 @@ const Community = ({ onNavigate }) => {
                 marginTop: '15px'
               }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button type="button" disabled={!currentUser || currentUser.isGuest} style={{
-                    padding: '8px 15px',
-                    background: '#ecf0f1',
-                    border: 'none',
-                    borderRadius: '20px',
-                    cursor: (!currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    opacity: (!currentUser || currentUser.isGuest) ? 0.5 : 1
-                  }}>
-                    📸 Add Photo
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageSelect}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!currentUser || currentUser.isGuest}
+                    style={{
+                      padding: '8px 15px',
+                      background: selectedImage ? '#27ae60' : '#ecf0f1',
+                      color: selectedImage ? 'white' : '#2c3e50',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: (!currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      opacity: (!currentUser || currentUser.isGuest) ? 0.5 : 1,
+                      fontWeight: selectedImage ? '500' : 'normal'
+                    }}
+                  >
+                    📸 {selectedImage ? 'Image Added' : 'Add Photo'}
                   </button>
-                  <button type="button" disabled={!currentUser || currentUser.isGuest} style={{
-                    padding: '8px 15px',
-                    background: '#ecf0f1',
-                    border: 'none',
-                    borderRadius: '20px',
-                    cursor: (!currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    opacity: (!currentUser || currentUser.isGuest) ? 0.5 : 1
-                  }}>
-                    📍 Add Location
+                  <button 
+                    type="button" 
+                    onClick={getCurrentLocation}
+                    disabled={!currentUser || currentUser.isGuest}
+                    style={{
+                      padding: '8px 15px',
+                      background: selectedLocation ? '#27ae60' : '#ecf0f1',
+                      color: selectedLocation ? 'white' : '#2c3e50',
+                      border: 'none',
+                      borderRadius: '20px',
+                      cursor: (!currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      opacity: (!currentUser || currentUser.isGuest) ? 0.5 : 1,
+                      fontWeight: selectedLocation ? '500' : 'normal'
+                    }}
+                  >
+                    📍 {selectedLocation ? 'Location Added' : 'Add Location'}
                   </button>
                 </div>
                 <button 
                   type="submit" 
-                  disabled={isLoading || !currentUser || currentUser.isGuest}
+                  disabled={isLoading || !currentUser || currentUser.isGuest || !newPost.trim()}
                   style={{
                     padding: '10px 20px',
-                    background: (isLoading || !currentUser || currentUser.isGuest) ? '#95a5a6' : '#3498db',
+                    background: (isLoading || !currentUser || currentUser.isGuest || !newPost.trim()) ? '#95a5a6' : '#3498db',
                     color: 'white',
                     border: 'none',
                     borderRadius: '20px',
-                    cursor: (isLoading || !currentUser || currentUser.isGuest) ? 'not-allowed' : 'pointer',
+                    cursor: (isLoading || !currentUser || currentUser.isGuest || !newPost.trim()) ? 'not-allowed' : 'pointer',
                     fontSize: '16px',
                     fontWeight: '500'
                   }}
@@ -567,34 +854,88 @@ const Community = ({ onNavigate }) => {
 
           {/* Additional Stats */}
           <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '25px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '20px'
           }}>
-            <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>📈 Today's Activity</h3>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '20px'
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
             }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.8rem', color: '#3498db', fontWeight: 'bold' }}>
-                  {communityStats.postsToday}
+              <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>📈 Today's Activity</h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '15px'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.6rem', color: '#3498db', fontWeight: 'bold' }}>
+                    {communityStats.postsToday}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>New Posts</div>
                 </div>
-                <div style={{ color: '#7f8c8d' }}>New Posts</div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.6rem', color: '#27ae60', fontWeight: 'bold' }}>
+                    {communityStats.activeToday}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Active Users</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.6rem', color: '#e67e22', fontWeight: 'bold' }}>
+                    {Math.floor(communityStats.waterTests / 30)}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Tests Today</div>
+                </div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.8rem', color: '#27ae60', fontWeight: 'bold' }}>
-                  {communityStats.activeToday}
+            </div>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+            }}>
+              <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>💾 Community Storage</h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '15px'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.6rem', color: '#9b59b6', fontWeight: 'bold' }}>
+                    {imageHandler.getStorageInfo().imageCount}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Images Stored</div>
                 </div>
-                <div style={{ color: '#7f8c8d' }}>Active Users</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.8rem', color: '#e67e22', fontWeight: 'bold' }}>
-                  {Math.floor(communityStats.waterTests / 30)}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.2rem', color: '#34495e', fontWeight: 'bold' }}>
+                    {imageHandler.getStorageInfo().formattedStorageUsed}
+                  </div>
+                  <div style={{ color: '#7f8c8d', fontSize: '0.9rem' }}>Storage Used</div>
                 </div>
-                <div style={{ color: '#7f8c8d' }}>Tests Today</div>
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    onClick={() => {
+                      const cleaned = imageHandler.cleanupOldImages();
+                      alert(`Cleaned up ${cleaned} old images`);
+                      // Refresh stats
+                      setCommunityStats({...communityStats});
+                    }}
+                    style={{
+                      background: '#95a5a6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🧹 Cleanup
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -666,23 +1007,108 @@ const CommunityPost = ({ post, currentUser, onLike, onComment, formatTimeAgo, ge
         {post.content}
       </p>
 
+      {/* Post Image */}
+      {post.image && (
+        <div style={{
+          marginBottom: '15px',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: '1px solid #e1e8ed'
+        }}>
+          <img
+            src={post.image.url}
+            alt="Post content"
+            style={{
+              width: '100%',
+              maxHeight: '400px',
+              objectFit: 'cover',
+              display: 'block'
+            }}
+          />
+        </div>
+      )}
+
       {/* Post Data (if available) */}
       {post.data && Object.keys(post.data).length > 0 && (
         <div style={{
           background: '#f8f9fa',
-          padding: '12px',
+          padding: '15px',
           borderRadius: '8px',
           marginBottom: '15px',
-          fontSize: '0.9rem'
+          fontSize: '0.9rem',
+          border: '1px solid #e1e8ed'
         }}>
           {post.type === 'water_test' && post.data.ph && (
-            <div>💧 <strong>Water Test Results:</strong> pH {post.data.ph}, Nitrates {post.data.nitrates}ppm</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontWeight: 'bold', color: '#3498db', marginBottom: '5px' }}>
+                💧 Water Test Results
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
+                <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                  <div style={{ fontWeight: 'bold', color: '#2c3e50' }}>pH Level</div>
+                  <div style={{ color: '#3498db', fontSize: '1.1rem' }}>{post.data.ph}</div>
+                </div>
+                <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                  <div style={{ fontWeight: 'bold', color: '#2c3e50' }}>Nitrates</div>
+                  <div style={{ color: '#e67e22', fontSize: '1.1rem' }}>{post.data.nitrates}ppm</div>
+                </div>
+                {post.data.chlorine && (
+                  <div style={{ background: 'white', padding: '8px', borderRadius: '6px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 'bold', color: '#2c3e50' }}>Chlorine</div>
+                    <div style={{ color: '#27ae60', fontSize: '1.1rem' }}>{post.data.chlorine}ppm</div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           {post.type === 'biodiversity_scan' && post.data.speciesCount && (
-            <div>🦜 <strong>Biodiversity Scan:</strong> {post.data.speciesCount} species identified</div>
+            <div>
+              <div style={{ fontWeight: 'bold', color: '#e67e22', marginBottom: '8px' }}>
+                🦜 Biodiversity Scan Results
+              </div>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div style={{ background: 'white', padding: '8px 12px', borderRadius: '6px' }}>
+                  <strong>{post.data.speciesCount}</strong> species identified
+                </div>
+                {post.data.rareSpecies && (
+                  <div style={{ background: '#fff3cd', padding: '8px 12px', borderRadius: '6px', color: '#856404' }}>
+                    ⭐ Rare: {post.data.rareSpecies}
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           {post.type === 'carbon_reduction' && post.data.co2Saved && (
-            <div>🌳 <strong>Carbon Impact:</strong> {post.data.co2Saved}kg CO₂ saved</div>
+            <div>
+              <div style={{ fontWeight: 'bold', color: '#27ae60', marginBottom: '8px' }}>
+                🌳 Carbon Impact Results
+              </div>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div style={{ background: 'white', padding: '8px 12px', borderRadius: '6px' }}>
+                  <strong>{post.data.co2Saved}kg</strong> CO₂ saved
+                </div>
+                <div style={{ background: 'white', padding: '8px 12px', borderRadius: '6px' }}>
+                  <strong>{post.data.reduction}%</strong> reduction
+                </div>
+              </div>
+            </div>
+          )}
+          {post.type === 'plant_identification' && post.data.species && (
+            <div>
+              <div style={{ fontWeight: 'bold', color: '#27ae60', marginBottom: '8px' }}>
+                🌿 Plant Identification
+              </div>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <div style={{ background: 'white', padding: '8px 12px', borderRadius: '6px' }}>
+                  Species: <strong>{post.data.species}</strong>
+                </div>
+                {post.data.confidence && (
+                  <div style={{ background: 'white', padding: '8px 12px', borderRadius: '6px' }}>
+                    Confidence: <strong>{post.data.confidence}%</strong>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}

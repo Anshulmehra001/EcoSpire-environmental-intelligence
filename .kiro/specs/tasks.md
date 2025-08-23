@@ -32,8 +32,7 @@
 - [x] Marketplace integration concepts
 - [x] Environmental impact tracking
 
-### Additional Tools (7 more)
-- [x] MycoRemediation - Fungal cleanup systems
+### Additional Tools (6 more)
 - [x] BioStreamAI - Environmental DNA analysis
 - [x] EWasteProspector - Mineral recovery
 - [x] GeneticResilience - Crop analysis

@@ -479,6 +479,54 @@ const Profile = ({ onNavigate, currentUser }) => {
                   </button>
                 </div>
               )}
+
+              {/* Account Actions */}
+              <div style={{
+                marginTop: '40px',
+                paddingTop: '30px',
+                borderTop: '2px solid #ecf0f1'
+              }}>
+                <h4 style={{ margin: '0 0 20px 0', color: '#2c3e50' }}>Account Actions</h4>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to logout? Your progress will be saved.')) {
+                        authManager.logout().then(() => {
+                          onNavigate && onNavigate('Dashboard');
+                          window.location.reload(); // Refresh to update auth state
+                        });
+                      }
+                    }}
+                    style={{
+                      padding: '12px 20px',
+                      background: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      maxWidth: '200px'
+                    }}
+                  >
+                    🚪 Logout
+                  </button>
+                  
+                  <p style={{ 
+                    fontSize: '0.9rem', 
+                    color: '#7f8c8d', 
+                    margin: '0',
+                    maxWidth: '400px'
+                  }}>
+                    Logging out will return you to guest mode. Your progress and data will be saved and restored when you log back in.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>

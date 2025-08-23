@@ -13,7 +13,7 @@
 
 ## 🚀 Project Overview
 
-EcoSpire is a comprehensive environmental intelligence platform featuring **18 AI-powered tools** that address pressing environmental challenges. This platform transforms smartphones into scientific instruments, empowering communities to monitor, analyze, and protect their environment through cutting-edge AI technology.
+EcoSpire is a comprehensive environmental intelligence platform featuring **17 AI-powered tools** that address pressing environmental challenges. This platform transforms smartphones into scientific instruments, empowering communities to monitor, analyze, and protect their environment through cutting-edge AI technology.
 
 ### 🎯 Core Mission
 **"Democratizing Environmental Intelligence"** - Making advanced environmental monitoring accessible to everyone, everywhere.
@@ -43,12 +43,6 @@ EcoSpire is a comprehensive environmental intelligence platform featuring **18 A
 - **B2B marketplace** for construction materials
 - **Urban mining optimization** algorithms
 - **Environmental impact tracking**
-
-### 🍄 **MycoRemediation** - AI Fungal Cleanup
-- **AI-controlled sensor networks** for soil cleanup
-- **Living pollution breakdown** systems
-- **Automated nutrient delivery** optimization
-- **Real-time contamination monitoring**
 
 ### 🧬 **BioStreamAI** - Environmental DNA Analysis
 - **Genetic-level ecosystem monitoring**
@@ -370,13 +364,12 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Documentation**: Check this README and inline comments
 - **Issues**: Report bugs on GitHub Issues
 - **Discussions**: Join GitHub Discussions for questions
-- **Email**: [your-email@example.com] for direct support
+- **Email**: aniketmehra715@gmail.com for direct support
 
 ### Community
-- **GitHub**: [Repository Link]
-- **Discord**: [Community Server] (if available)
-- **Twitter**: [@EcoSpire] (if available)
-- **Website**: [Project Website] (if available)
+- **GitHub**: https://github.com/Anshulmehra001/EcoSpire-environmental-intelligence
+- **Discord**: https://discord.gg/eX6sSmPW
+
 
 ---
 
