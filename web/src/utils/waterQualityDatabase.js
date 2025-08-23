@@ -66,7 +66,7 @@ class WaterQualityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['waterTests'], 'readwrite');
       const store = transaction.objectStore('waterTests');
-      
+
       const testRecord = {
         id: testData.id || this.generateId(),
         timestamp: testData.timestamp || new Date().toISOString(),
@@ -90,7 +90,7 @@ class WaterQualityDatabase {
       };
 
       const request = store.add(testRecord);
-      
+
       request.onsuccess = () => {
         // Create alerts if unsafe
         if (testData.safetyLevel === 'Unsafe') {
@@ -98,7 +98,7 @@ class WaterQualityDatabase {
         }
         resolve(testRecord);
       };
-      
+
       request.onerror = () => reject(request.error);
     });
   }
@@ -113,7 +113,7 @@ class WaterQualityDatabase {
       const transaction = this.db.transaction(['waterTests'], 'readonly');
       const store = transaction.objectStore('waterTests');
       const index = store.index('timestamp');
-      
+
       const request = index.openCursor(null, 'prev'); // Newest first
       const results = [];
       let count = 0;
@@ -138,15 +138,15 @@ class WaterQualityDatabase {
    */
   async getWaterTestsByLocation(latitude, longitude, radiusKm = 10) {
     const allTests = await this.getAllWaterTests(1000);
-    
+
     return allTests.filter(test => {
       if (!test.latitude || !test.longitude) return false;
-      
+
       const distance = this.calculateDistance(
         latitude, longitude,
         test.latitude, test.longitude
       );
-      
+
       return distance <= radiusKm;
     });
   }
@@ -161,9 +161,9 @@ class WaterQualityDatabase {
       const transaction = this.db.transaction(['waterTests'], 'readonly');
       const store = transaction.objectStore('waterTests');
       const index = store.index('waterSource');
-      
+
       const request = index.getAll(waterSource);
-      
+
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
@@ -191,7 +191,7 @@ class WaterQualityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['alerts'], 'readwrite');
       const store = transaction.objectStore('alerts');
-      
+
       const request = store.add(alert);
       request.onsuccess = () => resolve(alert);
       request.onerror = () => reject(request.error);
@@ -208,7 +208,7 @@ class WaterQualityDatabase {
       const transaction = this.db.transaction(['alerts'], 'readonly');
       const store = transaction.objectStore('alerts');
       const index = store.index('timestamp');
-      
+
       const request = index.openCursor(null, 'prev');
       const results = [];
 
@@ -234,15 +234,15 @@ class WaterQualityDatabase {
    */
   async getAlertsByLocation(latitude, longitude, radiusKm = 50) {
     const allAlerts = await this.getAllAlerts();
-    
+
     return allAlerts.filter(alert => {
       if (!alert.latitude || !alert.longitude) return false;
-      
+
       const distance = this.calculateDistance(
         latitude, longitude,
         alert.latitude, alert.longitude
       );
-      
+
       return distance <= radiusKm;
     });
   }
@@ -256,15 +256,15 @@ class WaterQualityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['alerts'], 'readwrite');
       const store = transaction.objectStore('alerts');
-      
+
       const getRequest = store.get(alertId);
-      
+
       getRequest.onsuccess = () => {
         const alert = getRequest.result;
         if (alert) {
           alert.resolved = true;
           alert.resolvedTimestamp = new Date().toISOString();
-          
+
           const putRequest = store.put(alert);
           putRequest.onsuccess = () => resolve(alert);
           putRequest.onerror = () => reject(putRequest.error);
@@ -272,7 +272,7 @@ class WaterQualityDatabase {
           reject(new Error('Alert not found'));
         }
       };
-      
+
       getRequest.onerror = () => reject(getRequest.error);
     });
   }
@@ -286,7 +286,7 @@ class WaterQualityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['userPreferences'], 'readwrite');
       const store = transaction.objectStore('userPreferences');
-      
+
       const request = store.put({ key, value, timestamp: new Date().toISOString() });
       request.onsuccess = () => resolve(value);
       request.onerror = () => reject(request.error);
@@ -302,7 +302,7 @@ class WaterQualityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['userPreferences'], 'readonly');
       const store = transaction.objectStore('userPreferences');
-      
+
       const request = store.get(key);
       request.onsuccess = () => {
         const result = request.result;
@@ -355,11 +355,11 @@ class WaterQualityDatabase {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
+
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
@@ -385,13 +385,13 @@ class WaterQualityDatabase {
     if (!this.db) await this.init();
 
     const stores = ['waterTests', 'alerts', 'userPreferences', 'calibrationData'];
-    
+
     return Promise.all(stores.map(storeName => {
       return new Promise((resolve, reject) => {
         const transaction = this.db.transaction([storeName], 'readwrite');
         const store = transaction.objectStore(storeName);
         const request = store.clear();
-        
+
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
@@ -427,7 +427,7 @@ class WaterQualityDatabase {
       const transaction = this.db.transaction(['userPreferences'], 'readonly');
       const store = transaction.objectStore('userPreferences');
       const request = store.getAll();
-      
+
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });

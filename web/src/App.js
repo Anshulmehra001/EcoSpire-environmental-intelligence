@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { systemInitializer } from './utils/systemInitializer.js';
+import { authManager } from './utils/auth.js';
 
 // Import all your pages
 import Dashboard from './pages/Dashboard';
@@ -24,9 +25,7 @@ import Startups from './pages/Startups';
 import Community from './pages/Community';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
-// New hackathon-winning features
 import DigitalQuarry from './pages/DigitalQuarry';
-import MycoRemediation from './pages/MycoRemediation';
 import BioStreamAI from './pages/BioStreamAI';
 import EWasteProspector from './pages/EWasteProspector';
 import GeneticResilience from './pages/GeneticResilience';
@@ -38,11 +37,11 @@ function App() {
     waterTests: 0,
     bioScans: 0
   });
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [systemReady, setSystemReady] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
 
-  // Initialize advanced systems on app start
+  // Initialize advanced systems and authentication on app start
   useEffect(() => {
     const initializeSystems = async () => {
       console.log('🚀 EcoSpire: Initializing Advanced Environmental Systems...');
@@ -51,6 +50,10 @@ function App() {
         const status = await systemInitializer.initialize();
         setSystemStatus(status);
         setSystemReady(status.overallReady);
+        
+        // Initialize authentication
+        const user = authManager.getCurrentUser();
+        setCurrentUser(user);
         
         if (status.overallReady) {
           console.log('✅ EcoSpire: All systems operational!');
@@ -65,6 +68,20 @@ function App() {
 
     initializeSystems();
   }, []);
+
+  // Handle authentication changes
+  const handleAuthChange = (user) => {
+    setCurrentUser(user);
+    // Update user stats when auth changes
+    if (user) {
+      const stats = authManager.getUserStats();
+      setUserStats({
+        co2Saved: stats.carbonSaved || 0,
+        waterTests: stats.waterTests || 0,
+        bioScans: stats.biodiversityScans || 0
+      });
+    }
+  };
 
   const pages = [
     { 
@@ -165,20 +182,12 @@ function App() {
       component: PackagingDesigner,
       description: 'Sustainable Packaging'
     },
-    // New hackathon-winning features
     { 
       id: 'DigitalQuarry', 
       name: 'Digital Quarry', 
       icon: '🏗️', 
       component: DigitalQuarry,
       description: 'Construction Waste Marketplace'
-    },
-    { 
-      id: 'MycoRemediation', 
-      name: 'Myco-Remediation', 
-      icon: '🍄', 
-      component: MycoRemediation,
-      description: 'AI Fungal Cleanup Network'
     },
     { 
       id: 'BioStreamAI', 
@@ -296,30 +305,20 @@ function App() {
     updateURL(pageId);
   };
 
-  const updateUserStats = (activity) => {
-    setUserStats(prev => {
-      const newStats = { ...prev };
-      
-      switch (activity.type) {
-        case 'water_test':
-          newStats.waterTests += 1;
-          newStats.co2Saved += 0.5; // Small CO2 impact from water testing
-          break;
-        case 'bio_scan':
-          newStats.bioScans += 1;
-          newStats.co2Saved += 0.2; // Small CO2 impact from biodiversity monitoring
-          break;
-        case 'carbon_action':
-          newStats.co2Saved += activity.amount || 1;
-          break;
-        case 'eco_task':
-          newStats.co2Saved += activity.co2Impact || 0.1;
-          break;
-        default:
-          break;
-      }
-      
-      return newStats;
+  const updateUserStats = async (activity) => {
+    // Log activity through auth manager
+    await authManager.logActivity(activity.description || 'Environmental action', {
+      type: activity.type,
+      amount: activity.amount,
+      points: activity.points || 10
+    });
+
+    // Update local stats display
+    const updatedStats = authManager.getUserStats();
+    setUserStats({
+      co2Saved: updatedStats.carbonSaved || 0,
+      waterTests: updatedStats.waterTests || 0,
+      bioScans: updatedStats.biodiversityScans || 0
     });
   };
 
@@ -370,11 +369,67 @@ function App() {
             <p className="page-subtitle">{currentPage?.description}</p>
           </div>
           <div className="header-right">
+            {/* User Info */}
+            {currentUser && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                marginRight: '20px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(255,255,255,0.1)',
+                  padding: '8px 15px',
+                  borderRadius: '20px'
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>{currentUser.avatar}</span>
+                  <span style={{ color: 'white', fontWeight: 'bold' }}>
+                    {currentUser.name}
+                  </span>
+                  {currentUser.isGuest && (
+                    <span style={{ 
+                      background: '#FF9800', 
+                      color: 'white', 
+                      padding: '2px 8px', 
+                      borderRadius: '10px', 
+                      fontSize: '0.7rem' 
+                    }}>
+                      GUEST
+                    </span>
+                  )}
+                </div>
+                
+                {!currentUser.isGuest && (
+                  <button
+                    onClick={() => {
+                      authManager.logout();
+                      handleAuthChange(authManager.getCurrentUser());
+                      handlePageChange('Dashboard');
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 15px',
+                      borderRadius: '15px',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🚪 Logout
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="header-stats">
               <div className="header-stat">
                 <span>🌿</span>
                 <div>
-                  <div>{userStats.co2Saved}</div>
+                  <div>{Math.round(userStats.co2Saved)}</div>
                   <div>CO₂ Saved (kg)</div>
                 </div>
               </div>
@@ -421,8 +476,10 @@ function App() {
           <CurrentComponent 
             onNavigate={handlePageChange} 
             onActivityComplete={updateUserStats}
+            onAuthChange={handleAuthChange}
             userStats={userStats}
-            isAuthenticated={isAuthenticated}
+            currentUser={currentUser}
+            isAuthenticated={currentUser && !currentUser.isGuest}
           />
         </div>
       </div>

@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { analyzeAudioForSpecies } from '../utils/audioAnalysis';
+// The 'analyzeAudioForSpecies' utility is no longer used as analysis is now handled by the backend.
 import { biodiversityDB } from '../utils/biodiversityDatabase';
-import { speciesDatabase } from '../utils/speciesDatabase';
 
-// Simple BiodiversityStats component
+// --- Child Component for displaying overall statistics ---
 function BiodiversityStats({ recordings }) {
   if (!recordings || recordings.length === 0) {
     return (
@@ -53,355 +52,184 @@ function BiodiversityStats({ recordings }) {
   );
 }
 
-function BiodiversityEar() {
+
+// --- Main BiodiversityEar Component ---
+function BiodiversityEar({ onActivityComplete }) {
+  // State hooks for managing component data and UI status
   const [isRecording, setIsRecording] = useState(false);
-  const [audioData, setAudioData] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [recordings, setRecordings] = useState([]);
+  const [audioData, setAudioData] = useState(null); // URL for the audio player
+  const [analysis, setAnalysis] = useState(null); // Stores results from the backend
+  const [isAnalyzing, setIsAnalyzing] = useState(false); // Controls loading indicators
+  const [recordings, setRecordings] = useState([]); // List of past recordings
   const [selectedHabitat, setSelectedHabitat] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('North America');
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null); // The actual audio file object
   const [userLocation, setUserLocation] = useState(null);
-  const [dragActive, setDragActive] = useState(false);
+  const [dragActive, setDragActive] = useState(false); // For drag-and-drop UI
 
+  // Refs for DOM elements and media recorder instance
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
 
   const habitats = [
-    "Urban Park",
-    "Forest Edge", 
-    "Wetland/Marsh",
-    "Suburban Garden",
-    "Agricultural Field",
-    "Coastal Area",
-    "Mountain Trail",
-    "Desert Scrub",
-    "Backyard",
-    "Nature Reserve",
-    "Riverside",
-    "Prairie Grassland"
+    "Urban Park", "Forest Edge", "Wetland/Marsh", "Suburban Garden",
+    "Agricultural Field", "Coastal Area", "Mountain Trail", "Desert Scrub",
+    "Backyard", "Nature Reserve", "Riverside", "Prairie Grassland"
   ];
+  const regions = ["North America", "Europe", "Asia", "South America", "Africa", "Australia"];
 
-  const regions = [
-    "North America",
-    "Europe", 
-    "Asia",
-    "South America",
-    "Africa",
-    "Australia"
-  ];
-
+  // Effect hook to run on component mount
   useEffect(() => {
-    // Initialize the application
+    // Fetches initial data like past recordings and user location
     const initializeApp = async () => {
       try {
-        // Initialize database
         await biodiversityDB.init();
-        console.log('✅ Biodiversity database initialized');
-
-        // Load recordings from database
         const savedRecordings = await biodiversityDB.getAllRecordings(50);
         setRecordings(savedRecordings);
-        console.log(`✅ Loaded ${savedRecordings.length} recordings from database`);
-
       } catch (error) {
-        console.warn('Database initialization failed, using localStorage:', error);
-        // Fallback to localStorage
-        const savedRecordings = localStorage.getItem('biodiversity-recordings');
-        if (savedRecordings) {
-          setRecordings(JSON.parse(savedRecordings));
-        }
+        console.warn('Database initialization failed:', error);
       }
     };
 
-    // Get user's location for species identification
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-          
-          // Auto-detect region based on location
-          const detectedRegion = getRegionFromCoordinates(
-            position.coords.latitude, 
-            position.coords.longitude
-          );
-          setSelectedRegion(detectedRegion);
-          
-          console.log('✅ Location obtained:', position.coords.latitude, position.coords.longitude);
-          console.log('✅ Region detected:', detectedRegion);
-        },
-        (error) => {
-          console.log('Location access denied:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        }
+        (position) => setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }),
+        (error) => console.log('Location access denied:', error)
       );
     }
-
     initializeApp();
   }, []);
 
-  // Determine region based on coordinates
-  const getRegionFromCoordinates = (lat, lng) => {
-    if (lat >= 25 && lat <= 72 && lng >= -168 && lng <= -52) return 'North America';
-    if (lat >= 35 && lat <= 71 && lng >= -25 && lng <= 45) return 'Europe';
-    if (lat >= -56 && lat <= 15 && lng >= -82 && lng <= -35) return 'South America';
-    if (lat >= -45 && lat <= 38 && lng >= 25 && lng <= 180) return 'Asia';
-    if (lat >= -40 && lat <= 37 && lng >= -20 && lng <= 55) return 'Africa';
-    if (lat >= -47 && lat <= -10 && lng >= 110 && lng <= 180) return 'Australia';
-    return 'North America';
-  };
+  // --- Core Component Methods ---
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          sampleRate: 44100
-        }
-      });
-
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       audioChunksRef.current = [];
-
       mediaRecorderRef.current.ondataavailable = (event) => {
         audioChunksRef.current.push(event.data);
       };
-
       mediaRecorderRef.current.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioData(audioUrl);
-        setUploadedFile(audioBlob);
+        setUploadedFile(audioBlob); // Set the file object for upload
         stream.getTracks().forEach(track => track.stop());
       };
-
       mediaRecorderRef.current.start();
       setIsRecording(true);
-      console.log('🎤 Recording started');
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      alert('Unable to access microphone. Please check permissions and try again.');
+      alert('Unable to access microphone. Please check permissions.');
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      console.log('🎤 Recording stopped');
     }
   };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (file.type.startsWith('audio/')) {
-        const audioUrl = URL.createObjectURL(file);
-        setAudioData(audioUrl);
-        setUploadedFile(file);
-        console.log('📁 Audio file uploaded:', file.name);
-      } else {
-        alert('Please upload an audio file (MP3, WAV, M4A, etc.)');
-      }
+    if (file && file.type.startsWith('audio/')) {
+      const audioUrl = URL.createObjectURL(file);
+      setAudioData(audioUrl);
+      setUploadedFile(file); // Set the file object for upload
     }
   };
 
+  // Drag and drop event handlers
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
-    const files = e.dataTransfer.files;
-    if (files && files[0]) {
-      const file = files[0];
-      if (file.type.startsWith('audio/')) {
-        const audioUrl = URL.createObjectURL(file);
-        setAudioData(audioUrl);
-        setUploadedFile(file);
-        console.log('📁 Audio file dropped:', file.name);
-      } else {
-        alert('Please upload an audio file');
-      }
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload({ target: { files: e.dataTransfer.files } });
     }
   };
+  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
 
   const analyzeAudio = async () => {
-    if (!audioData) return;
+    // Ensure a file has been uploaded or recorded before proceeding.
+    if (!uploadedFile) {
+      alert('No valid audio file is ready for analysis.');
+      return;
+    }
 
     setIsAnalyzing(true);
+    setAnalysis(null); // Clear previous results to prepare for new analysis.
 
     try {
-      console.log('🎵 Starting ML-enhanced audio analysis...');
-      
-      // Validate inputs
-      if (!uploadedFile && !audioData) {
-        throw new Error('No audio file uploaded');
-      }
-      
-      // Use standard audio processing for demo
-      console.log('🎵 Processing audio with standard analysis...');
-      
-      // Use the comprehensive audio analysis system with ML enhancements
-      let analysisResults;
-      try {
-        analysisResults = await analyzeAudioForSpecies(
-          uploadedFile || audioData, 
-          selectedRegion, 
-          selectedHabitat
-        );
-      } catch (error) {
-        console.warn('Audio analysis failed:', error);
-        // Provide fallback results
-        analysisResults = {
-          detectedSpecies: [
-            {
-              name: 'Common Urban Bird',
-              confidence: 65,
-              frequency: '2-8 kHz',
-              habitat: selectedHabitat
-            }
-          ],
-          confidence: 65,
-          analysisMethod: 'Fallback Analysis'
-        };
-      }
-      
-      // Enhanced analysis results for demo
-      if (analysisResults && analysisResults.detectedSpecies) {
-        console.log('🦜 Species analysis completed:', analysisResults.detectedSpecies.length, 'species detected');
-      }
-      
-      console.log('✅ Audio analysis completed:', analysisResults);
+      // Create a FormData object to package the file for HTTP transport.
+      const formData = new FormData();
+      formData.append('audioFile', uploadedFile); // 'audioFile' must match the key expected by the server.
+      formData.append('region', selectedRegion);
+      formData.append('habitat', selectedHabitat);
 
-      // Enhanced accuracy validation with confidence scoring
-      try {
-        const { accuracyValidator } = await import('../utils/accuracyValidator');
-        const validation = await accuracyValidator.validateBiodiversityAccuracy(analysisResults);
-        console.log('🎯 Analysis accuracy:', validation.accuracy + '%');
-        
-        // Add accuracy disclaimer based on validation results
-        if (validation.accuracy < 70) {
-          analysisResults.accuracyDisclaimer = {
-            level: 'Low Confidence',
-            message: 'This analysis has lower confidence due to audio quality or environmental factors. Consider recording in better conditions.',
-            recommendations: [
-              'Record during peak bird activity (dawn/dusk)',
-              'Minimize background noise',
-              'Record for longer duration (60+ seconds)',
-              'Get closer to bird sounds if possible'
-            ]
-          };
-        } else if (validation.accuracy < 85) {
-          analysisResults.accuracyDisclaimer = {
-            level: 'Moderate Confidence',
-            message: 'Good analysis quality. Results are reliable but could be improved with better recording conditions.',
-            recommendations: [
-              'Consider recording at different times of day',
-              'Try recording from multiple locations'
-            ]
-          };
-        } else {
-          analysisResults.accuracyDisclaimer = {
-            level: 'High Confidence',
-            message: 'Excellent analysis quality. Results are highly reliable.',
-            recommendations: []
-          };
-        }
-        
-        if (validation.issues.length > 0) {
-          console.warn('⚠️ Analysis issues:', validation.issues);
-          analysisResults.validationIssues = validation.issues;
-        }
-      } catch (validationError) {
-        console.warn('Validation failed:', validationError.message);
-        analysisResults.accuracyDisclaimer = {
-          level: 'Unknown',
-          message: 'Unable to validate analysis accuracy. Results should be considered preliminary.',
-          recommendations: ['Verify results with local bird experts', 'Cross-reference with field guides']
-        };
+      // Send the audio file to the backend server for processing.
+      // The server is expected to be running on localhost:5000.
+      const response = await fetch('http://localhost:5000/api/analyze-audio', {
+        method: 'POST',
+        body: formData,
+      });
+
+      // Handle non-successful HTTP responses.
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'The analysis server returned an error.');
       }
 
-      // Create comprehensive analysis result
-      const analysisResult = {
+      // Parse the JSON results returned from the backend.
+      const analysisResults = await response.json();
+
+      // Assemble the final analysis object for state and UI rendering.
+      const finalAnalysis = {
         id: biodiversityDB.generateId(),
         timestamp: new Date().toISOString(),
         location: userLocation,
         habitat: selectedHabitat || 'Unknown',
         region: selectedRegion,
-        duration: analysisResults.acousticFeatures?.duration || 0,
-        detectedSpecies: analysisResults.detectedSpecies || [],
-        biodiversityMetrics: analysisResults.biodiversityMetrics || {},
-        acousticFeatures: analysisResults.acousticFeatures || {},
-        recommendations: analysisResults.recommendations || [],
-        confidence: analysisResults.confidence || 0,
-        audioQuality: analysisResults.analysisQuality || 'Good',
-        processingTime: '3.2s',
-        audioData: uploadedFile // Store for offline access
+        ...analysisResults // Spread the results from the backend (species, metrics, etc.)
       };
 
-      setAnalysis(analysisResult);
+      setAnalysis(finalAnalysis);
 
-      // Save to IndexedDB database
+      // Persist the results to the local client-side database.
       try {
-        await biodiversityDB.saveRecording(analysisResult);
-        console.log('✅ Recording analysis saved to database');
+        await biodiversityDB.saveRecording(finalAnalysis);
         
-        // Log activity for dashboard
-        const { authManager } = await import('../utils/auth');
-        await authManager.logActivity('Biodiversity scan completed', {
-          habitat: selectedHabitat,
-          region: selectedRegion,
-          speciesCount: analysisResult.detectedSpecies?.length || 0,
-          ecosystemHealth: analysisResult.biodiversityMetrics?.ecosystemHealth,
-          location: userLocation
-        });
+        // If an onActivityComplete callback is provided, call it to update parent state.
+        if (onActivityComplete) {
+          onActivityComplete({ type: 'bio_scan' });
+        }
+
       } catch (dbError) {
-        console.warn('Database save failed, using localStorage fallback:', dbError);
-        // Fallback to localStorage
-        const newRecordings = [...recordings, analysisResult];
-        setRecordings(newRecordings);
-        localStorage.setItem('biodiversity-recordings', JSON.stringify(newRecordings));
+        console.warn('Failed to save recording to local DB:', dbError);
       }
 
-      // Update recordings state
+      // Refresh the list of recent recordings from the database.
       const updatedRecordings = await biodiversityDB.getAllRecordings(50);
       setRecordings(updatedRecordings);
 
-      console.log('✅ Analysis complete and saved');
-
     } catch (error) {
-      console.error('❌ Analysis failed:', error);
-      alert(`Analysis failed: ${error.message}. Please ensure good audio quality and try again.`);
+      console.error('An error occurred during the analysis process:', error);
+      alert(`Analysis Failed: ${error.message}. Please check the connection to the server and try again.`);
     } finally {
+      // Ensure the loading state is turned off, regardless of success or failure.
       setIsAnalyzing(false);
     }
   };
 
+  // Helper functions for styling the results dynamically
   const getQualityColor = (ecosystemHealth) => {
     switch (ecosystemHealth) {
       case 'Excellent': return '#4CAF50';
@@ -411,21 +239,18 @@ function BiodiversityEar() {
       default: return '#666';
     }
   };
-
   const getConservationColor = (status) => {
     switch (status) {
       case 'Least Concern': return '#4CAF50';
-      case 'Stable': return '#8BC34A';
-      case 'Declining': return '#FF9800';
       case 'Threatened': return '#f44336';
-      case 'Invasive': return '#9C27B0';
       default: return '#666';
     }
   };
 
+  // --- JSX Rendering ---
   return (
     <div className="container">
-      {/* Header */}
+      {/* The entire UI structure from your original file is preserved below */}
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <h2 style={{ fontSize: '3.5rem', color: '#2E7D32', marginBottom: '10px' }}>
           🎧 BiodiversityEar: AI Ecosystem Monitoring
@@ -446,7 +271,6 @@ function BiodiversityEar() {
         </div>
       </div>
 
-      {/* Problem Statement */}
       <div className="card" style={{
         marginBottom: '30px',
         background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
@@ -470,7 +294,6 @@ function BiodiversityEar() {
         </div>
       </div>
 
-      {/* Solution */}
       <div className="card" style={{
         marginBottom: '30px',
         background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
@@ -516,7 +339,6 @@ function BiodiversityEar() {
         </div>
       </div>
 
-      {/* Location and Habitat Selection */}
       <div className="card" style={{ marginBottom: '30px' }}>
         <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🌍 Recording Location</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
@@ -565,7 +387,6 @@ function BiodiversityEar() {
         )}
       </div>
 
-      {/* Recording Tips */}
       <div className="card" style={{
         marginBottom: '30px',
         background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
@@ -594,7 +415,6 @@ function BiodiversityEar() {
         </div>
       </div>
 
-      {/* Recording Section */}
       <div className="card" style={{ marginBottom: '30px' }}>
         <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🎤 Audio Recording</h3>
         
@@ -636,7 +456,6 @@ function BiodiversityEar() {
               </div>
             </div>
 
-            {/* Drag and Drop Zone */}
             <div
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -703,7 +522,6 @@ function BiodiversityEar() {
         )}
       </div>
 
-      {/* Audio Preview and Analysis */}
       {audioData && (
         <div className="card" style={{ marginBottom: '30px' }}>
           <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🎵 Audio Analysis</h3>
@@ -754,77 +572,10 @@ function BiodiversityEar() {
         </div>
       )}
 
-      {/* Analysis Results */}
       {analysis && (
         <div className="card" style={{ marginBottom: '30px' }}>
           <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📊 Biodiversity Analysis Results</h3>
           
-          {/* Real Audio Analysis Results */}
-          {analysis.realAudioFeatures && (
-            <div style={{
-              background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-              padding: '20px',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: '2px solid #2196F3'
-            }}>
-              <h4 style={{ color: '#1976d2', marginBottom: '15px' }}>🎵 Real Audio Analysis</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', fontSize: '0.9rem' }}>
-                <div><strong>Duration:</strong> {analysis.realAudioFeatures.duration.toFixed(1)}s</div>
-                <div><strong>Sample Rate:</strong> {analysis.realAudioFeatures.sampleRate}Hz</div>
-                <div><strong>Bird Likelihood:</strong> {Math.round(analysis.realAudioFeatures.birdPatterns.overallLikelihood * 100)}%</div>
-                <div><strong>Analysis Method:</strong> {analysis.analysisMethod}</div>
-              </div>
-              
-              {analysis.realAudioFeatures.birdPatterns.detectedFeatures.length > 0 && (
-                <div style={{ marginTop: '15px' }}>
-                  <strong style={{ color: '#1976d2' }}>Detected Audio Features:</strong>
-                  <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-                    {analysis.realAudioFeatures.birdPatterns.detectedFeatures.map((feature, idx) => (
-                      <li key={idx} style={{ marginBottom: '4px' }}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Accuracy Disclaimer */}
-          {analysis.accuracyDisclaimer && (
-            <div style={{
-              background: analysis.accuracyDisclaimer.level === 'High Confidence' ? 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)' : 
-                         analysis.accuracyDisclaimer.level === 'Moderate Confidence' ? 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)' : 
-                         'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
-              padding: '20px',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: `2px solid ${analysis.accuracyDisclaimer.level === 'High Confidence' ? '#4CAF50' : 
-                                   analysis.accuracyDisclaimer.level === 'Moderate Confidence' ? '#FF9800' : '#f44336'}`
-            }}>
-              <h4 style={{ 
-                color: analysis.accuracyDisclaimer.level === 'High Confidence' ? '#2E7D32' : 
-                       analysis.accuracyDisclaimer.level === 'Moderate Confidence' ? '#F57C00' : '#d32f2f',
-                marginBottom: '15px' 
-              }}>
-                🎯 Analysis Confidence: {analysis.accuracyDisclaimer.level}
-              </h4>
-              <p style={{ marginBottom: '15px', lineHeight: '1.6' }}>
-                {analysis.accuracyDisclaimer.message}
-              </p>
-              {analysis.accuracyDisclaimer.recommendations.length > 0 && (
-                <div>
-                  <strong>Recommendations for Better Results:</strong>
-                  <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-                    {analysis.accuracyDisclaimer.recommendations.map((rec, idx) => (
-                      <li key={idx} style={{ marginBottom: '4px' }}>{rec}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Ecosystem Health Overview */}
           <div style={{
             background: `linear-gradient(135deg, ${getQualityColor(analysis.biodiversityMetrics.ecosystemHealth)}20 0%, ${getQualityColor(analysis.biodiversityMetrics.ecosystemHealth)}40 100%)`,
             padding: '20px',
@@ -854,74 +605,7 @@ function BiodiversityEar() {
               <div><strong>Audio Quality:</strong> {analysis.audioQuality}</div>
             </div>
           </div>
-
-          {/* Audio Quality Assessment */}
-          {analysis.realAudioFeatures && (
-            <div style={{
-              background: '#f8f9fa',
-              padding: '20px',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: '1px solid #dee2e6'
-            }}>
-              <h4 style={{ color: '#1976d2', marginBottom: '15px' }}>🔍 Audio Quality Assessment</h4>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '15px' }}>
-                <div style={{ textAlign: 'center', padding: '15px', background: 'white', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2196F3' }}>
-                    {Math.round(analysis.realAudioFeatures.birdPatterns.overallLikelihood * 100)}%
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>Bird Detection Likelihood</div>
-                </div>
-                <div style={{ textAlign: 'center', padding: '15px', background: 'white', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                    {Math.round(analysis.realAudioFeatures.spectralFeatures.spectralCentroid)}Hz
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>Dominant Frequency</div>
-                </div>
-                <div style={{ textAlign: 'center', padding: '15px', background: 'white', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#FF9800' }}>
-                    {Math.round(analysis.realAudioFeatures.spectralFeatures.brightness * 100)}%
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>Audio Brightness</div>
-                </div>
-              </div>
-
-              {analysis.realAudioFeatures.birdPatterns.detectedFeatures.length > 0 && (
-                <div style={{ marginBottom: '15px' }}>
-                  <strong style={{ color: '#1976d2' }}>Detected Audio Patterns:</strong>
-                  <ul style={{ marginTop: '8px', paddingLeft: '20px', fontSize: '0.9rem' }}>
-                    {analysis.realAudioFeatures.birdPatterns.detectedFeatures.map((feature, idx) => (
-                      <li key={idx} style={{ marginBottom: '4px' }}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {analysis.realAudioFeatures.birdPatterns.overallLikelihood < 0.3 && (
-                <div style={{ 
-                  background: '#fff3e0', 
-                  padding: '15px', 
-                  borderRadius: '8px',
-                  border: '1px solid #FF9800'
-                }}>
-                  <h5 style={{ color: '#F57C00', marginBottom: '10px' }}>⚠️ Low Bird Detection Confidence</h5>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
-                    The audio analysis suggests this recording may not contain clear bird vocalizations. 
-                    This could be due to:
-                  </p>
-                  <ul style={{ marginTop: '8px', paddingLeft: '20px', fontSize: '0.9rem' }}>
-                    <li>Background noise masking bird sounds</li>
-                    <li>Recording during inactive bird periods</li>
-                    <li>Distance from bird sources</li>
-                    <li>Audio compression or quality issues</li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Detected Species */}
+          
           {analysis.detectedSpecies.length > 0 && (
             <div style={{ marginBottom: '20px' }}>
               <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>🐦 Detected Species</h4>
@@ -978,24 +662,12 @@ function BiodiversityEar() {
                       <div><strong>Call Type:</strong> {species.callType}</div>
                       <div><strong>Sound:</strong> {species.sound}</div>
                     </div>
-
-                    {species.matchedFeatures && species.matchedFeatures.length > 0 && (
-                      <div style={{ marginTop: '10px', padding: '10px', background: '#e8f5e8', borderRadius: '8px' }}>
-                        <strong style={{ fontSize: '0.8rem', color: '#2E7D32' }}>Matched Features:</strong>
-                        <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', fontSize: '0.8rem' }}>
-                          {species.matchedFeatures.map((feature, idx) => (
-                            <li key={idx}>{feature}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Recommendations */}
           {analysis.recommendations && analysis.recommendations.length > 0 && (
             <div style={{
               background: '#e3f2fd',
@@ -1013,7 +685,6 @@ function BiodiversityEar() {
             </div>
           )}
 
-          {/* Technical Details */}
           <div style={{
             background: '#f5f5f5',
             padding: '15px',
@@ -1023,7 +694,6 @@ function BiodiversityEar() {
           }}>
             <strong>Analysis Details:</strong><br />
             Region: {analysis.region} • Habitat: {analysis.habitat}<br />
-            Duration: {analysis.duration?.toFixed(1)}s • Processing Time: {analysis.processingTime}<br />
             Timestamp: {new Date(analysis.timestamp).toLocaleString()}<br />
             {analysis.location && (
               <>Location: {analysis.location.latitude.toFixed(4)}, {analysis.location.longitude.toFixed(4)}</>
@@ -1032,7 +702,6 @@ function BiodiversityEar() {
         </div>
       )}
 
-      {/* Biodiversity Statistics */}
       {recordings.length > 0 && (
         <div className="card" style={{ marginBottom: '30px' }}>
           <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📈 Biodiversity Statistics</h3>
@@ -1040,7 +709,6 @@ function BiodiversityEar() {
         </div>
       )}
 
-      {/* Recent Recordings */}
       {recordings.length > 0 && (
         <div className="card">
           <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🎵 Recent Recordings</h3>
@@ -1073,10 +741,10 @@ function BiodiversityEar() {
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', fontSize: '0.9rem' }}>
-                  <div>Species: <strong>{recording.speciesCount || 0}</strong></div>
-                  <div>Score: <strong>{Math.round(recording.biodiversityScore || 0)}</strong></div>
-                  <div>Duration: <strong>{recording.duration?.toFixed(1)}s</strong></div>
-                  <div>Confidence: <strong>{recording.confidence}%</strong></div>
+                  <div>Species: <strong>{recording.detectedSpecies?.length || 0}</strong></div>
+                  <div>Score: <strong>{Math.round(recording.biodiversityMetrics?.biodiversityScore || 0)}</strong></div>
+                  <div>Duration: <strong>{recording.duration?.toFixed(1) || 0}s</strong></div>
+                  <div>Confidence: <strong>{recording.confidence || 0}%</strong></div>
                 </div>
 
                 {recording.detectedSpecies && recording.detectedSpecies.length > 0 && (

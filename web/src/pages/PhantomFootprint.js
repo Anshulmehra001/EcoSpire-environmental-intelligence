@@ -1,257 +1,219 @@
-import React, { useState, useEffect } from 'react';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import FeatureHeader from '../components/ui/FeatureHeader';
-import ImpactMetrics from '../components/ui/ImpactMetrics';
+import React, { useState } from 'react';
 
 const PhantomFootprint = () => {
   const [url, setUrl] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [browserExtensionInstalled, setBrowserExtensionInstalled] = useState(false);
+  const [error, setError] = useState(null);
 
+  // This is the fully functional, backend-connected function
   const analyzeURL = async () => {
-    if (!url) return;
+    if (!url || !url.startsWith('http')) {
+      setError("Please enter a valid product URL (e.g., https://...)");
+      return;
+    }
     
     setIsAnalyzing(true);
-    
-    // Simulate analysis delay
-    setTimeout(() => {
-      const mockAnalysis = {
-        product: extractProductName(url),
-        hiddenImpacts: {
-          returnRate: Math.floor(Math.random() * 30) + 10,
-          packagingWaste: Math.floor(Math.random() * 500) + 100,
-          carbonFootprint: Math.floor(Math.random() * 50) + 20,
-          waterUsage: Math.floor(Math.random() * 1000) + 200
-        },
-        recommendations: [
-          'Consider buying from local retailers to reduce shipping emissions',
-          'Check return policy - high return rates indicate sizing issues',
-          'Look for minimal packaging options',
-          'Consider product longevity and repairability'
-        ],
-        impactScore: Math.floor(Math.random() * 40) + 30
-      };
+    setAnalysis(null);
+    setError(null);
       
-      setAnalysis(mockAnalysis);
+    try {
+      const response = await fetch('http://localhost:5000/api/analyze-footprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+        
+      const analysisData = await response.json();
+
+      if (!response.ok || analysisData.error) {
+        throw new Error(analysisData.error || 'Analysis failed due to a server error.');
+      }
+      
+      console.log("DEBUG: Received footprint analysis:", analysisData);
+      setAnalysis(analysisData);
+        
+    } catch (err) {
+      console.error("Phantom Footprint analysis error:", err);
+      setError(err.message);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
-  };
-
-  const extractProductName = (url) => {
-    const products = [
-      'Wireless Headphones',
-      'Smartphone Case',
-      'Running Shoes',
-      'Laptop Backpack',
-      'Coffee Maker',
-      'Desk Lamp',
-      'Bluetooth Speaker',
-      'Fitness Tracker'
-    ];
-    return products[Math.floor(Math.random() * products.length)];
-  };
-
-  const installExtension = () => {
-    // Simulate extension installation
-    setBrowserExtensionInstalled(true);
-    alert('Browser extension installed! (Simulated for demo)');
-  };
-
-  const impactData = analysis ? [
-    {
-      label: 'Return Rate Impact',
-      value: `${analysis.hiddenImpacts.returnRate}%`,
-      description: 'Products returned due to sizing/quality issues',
-      color: 'red'
-    },
-    {
-      label: 'Packaging Waste',
-      value: `${analysis.hiddenImpacts.packagingWaste}g`,
-      description: 'Estimated packaging materials per item',
-      color: 'orange'
-    },
-    {
-      label: 'Carbon Footprint',
-      value: `${analysis.hiddenImpacts.carbonFootprint}kg CO₂`,
-      description: 'Total carbon emissions including returns',
-      color: 'gray'
-    },
-    {
-      label: 'Water Usage',
-      value: `${analysis.hiddenImpacts.waterUsage}L`,
-      description: 'Water used in production and logistics',
-      color: 'blue'
     }
-  ] : [];
+  };
+
+  const getImpactColor = (score) => {
+    if (score > 75) return '#f44336'; // Red for High Impact
+    if (score > 50) return '#FF9800'; // Orange for Medium Impact
+    return '#4CAF50'; // Green for Low Impact
+  };
 
   return (
-    <div className="phantom-footprint">
-      <FeatureHeader
-        title="👻 Phantom Footprint"
-        subtitle="Hidden Impact Tracker"
-        description="Reveal the hidden environmental costs of online shopping and returns"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <h3 className="text-xl font-semibold mb-4">Analyze Product URL</h3>
-            
-            <div className="space-y-4">
-              <Input
-                type="url"
-                placeholder="Paste product URL (e.g., amazon.com/product/...)"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-              
-              <Button 
-                onClick={analyzeURL}
-                disabled={isAnalyzing || !url}
-                className="w-full"
-              >
-                {isAnalyzing ? 'Analyzing Hidden Impacts...' : 'Reveal Hidden Footprint'}
-              </Button>
-            </div>
-
-            {analysis && (
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-medium">Analysis: {analysis.product}</h4>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    analysis.impactScore > 70 ? 'bg-red-100 text-red-800' :
-                    analysis.impactScore > 50 ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    Impact Score: {analysis.impactScore}/100
-                  </div>
-                </div>
-
-                <ImpactMetrics metrics={impactData} />
-
-                <div className="mt-6">
-                  <h5 className="font-medium mb-3">💡 Recommendations</h5>
-                  <ul className="space-y-2">
-                    {analysis.recommendations.map((rec, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <span className="text-green-500 mt-1">•</span>
-                        <span className="text-sm">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </Card>
-        </div>
-
-        <div>
-          <Card>
-            <h3 className="text-xl font-semibold mb-4">Browser Extension</h3>
-            
-            {!browserExtensionInstalled ? (
-              <div className="text-center">
-                <div className="text-4xl mb-4">🔌</div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Install our browser extension for real-time impact notifications while shopping
-                </p>
-                <Button onClick={installExtension} className="w-full">
-                  Install Extension
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center">
-                <div className="text-4xl mb-4">✅</div>
-                <p className="text-sm text-green-600 mb-4">
-                  Extension installed! You'll now see environmental impact warnings while shopping online.
-                </p>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <p className="text-xs text-green-700">
-                    Demo: Extension will show popup warnings for high-impact products
-                  </p>
-                </div>
-              </div>
-            )}
-          </Card>
-
-          <Card>
-            <h3 className="text-lg font-semibold mb-3">Hidden Impact Categories</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <span className="text-red-500">📦</span>
-                <div>
-                  <p className="font-medium text-sm">Return Shipping</p>
-                  <p className="text-xs text-gray-600">Double carbon footprint from returns</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <span className="text-orange-500">🗑️</span>
-                <div>
-                  <p className="font-medium text-sm">Packaging Waste</p>
-                  <p className="text-xs text-gray-600">Excessive packaging materials</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <span className="text-blue-500">💧</span>
-                <div>
-                  <p className="font-medium text-sm">Water Footprint</p>
-                  <p className="text-xs text-gray-600">Hidden water usage in production</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <span className="text-gray-500">⚡</span>
-                <div>
-                  <p className="font-medium text-sm">Energy Consumption</p>
-                  <p className="text-xs text-gray-600">Manufacturing and logistics energy</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+    <div className="container">
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '3.5rem', color: '#2E7D32', marginBottom: '10px' }}>
+          👻 Phantom Footprint
+        </h2>
+        <p style={{ fontSize: '1.3rem', color: '#666', marginBottom: '15px' }}>
+          Uncover the hidden environmental costs of your online purchases
+        </p>
+        <div style={{
+          background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+          color: 'white', padding: '15px 30px', borderRadius: '25px',
+          display: 'inline-block', fontSize: '1rem', fontWeight: 'bold'
+        }}>
+          🔍 URL Analysis • 💧 Water Footprint • 💨 Carbon Tracking • 💡 Smart Choices
         </div>
       </div>
 
-      <Card>
-        <h3 className="text-xl font-semibold mb-4">How Phantom Footprint Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">🔍</div>
-            <h4 className="font-medium mb-2">URL Analysis</h4>
-            <p className="text-sm text-gray-600">
-              Analyze product pages for hidden impact indicators
-            </p>
+      {/* Problem Statement Card (Inspired by your other pages) */}
+      <div className="card" style={{
+        marginBottom: '30px', background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
+        border: '2px solid #f44336'
+      }}>
+        <h3 style={{ color: '#d32f2f', marginBottom: '15px' }}>🚨 The Hidden Cost of Convenience</h3>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+          Online shopping is easy, but the price tag doesn't show the whole story. Every product has a "phantom footprint"—hidden costs in water, carbon emissions from global shipping, and waste from packaging and returns—that harm our planet.
+        </p>
+      </div>
+
+      {/* Solution Card (Inspired by your other pages) */}
+      <div className="card" style={{
+        marginBottom: '30px', background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
+        border: '2px solid #4CAF50'
+      }}>
+        <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>💡 Making the Invisible, Visible</h3>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '20px' }}>
+          Our AI analyzes any product URL to calculate its true environmental price tag. We instantly visualize the hidden water, waste, and carbon costs, empowering you to make conscious, sustainable purchasing decisions.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '3rem' }}>🔗</div><h4 style={{ color: '#2E7D32' }}>1. Paste URL</h4><p>Provide a product link.</p></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '3rem' }}>🤖</div><h4 style={{ color: '#2E7D32' }}>2. AI Analysis</h4><p>We calculate its lifecycle costs.</p></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '3rem' }}>📊</div><h4 style={{ color: '#2E7D32' }}>3. See Report</h4><p>View the hidden footprint.</p></div>
+          <div style={{ textAlign: 'center' }}><div style={{ fontSize: '3rem' }}>🌱</div><h4 style={{ color: '#2E7D32' }}>4. Choose Better</h4><p>Make a smarter choice.</p></div>
+        </div>
+      </div>
+
+      {/* Main Analysis Input Card */}
+      <div className="card" style={{ marginBottom: '30px' }}>
+        <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🔍 Analyze a Product URL</h3>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input
+            type="url"
+            placeholder="Paste a product URL from a major online retailer..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={isAnalyzing}
+            style={{
+                width: '100%', padding: '12px', fontSize: '1rem',
+                borderRadius: '8px', border: error ? '2px solid #f44336' : '2px solid #ccc'
+            }}
+          />
+          <button
+            onClick={analyzeURL}
+            disabled={isAnalyzing || !url}
+            style={{
+              fontSize: '1rem', padding: '12px 24px',
+              background: isAnalyzing ? '#ccc' : 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+              border: 'none', borderRadius: '8px', color: 'white',
+              fontWeight: 'bold', cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {isAnalyzing ? 'Analyzing...' : 'Reveal Footprint'}
+          </button>
+        </div>
+        {error && <p style={{ color: '#d32f2f', marginTop: '10px' }}>{error}</p>}
+      </div>
+
+      {/* Loading Spinner */}
+      {isAnalyzing && (
+        <div className="card" style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px', height: '48px', border: '4px solid #f3f3f3',
+            borderTop: '4px solid #4CAF50', borderRadius: '50%',
+            animation: 'spin 1s linear infinite', margin: '0 auto 20px'
+          }}></div>
+          <p>Scanning product data and calculating hidden costs...</p>
+        </div>
+      )}
+
+      {/* Results Section */}
+      {analysis && (
+        <div className="card" style={{
+            animation: 'fadeIn 0.5s ease-in-out'
+        }}>
+          {/* Results Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #ddd' }}>
+            <div>
+              <p style={{ color: '#666', margin: 0 }}>Analysis for:</p>
+              <h3 style={{ color: '#2E7D32', fontSize: '1.8rem', margin: 0 }}>
+                {analysis.productName}
+              </h3>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '70px', height: '70px', borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: getImpactColor(analysis.impactScore),
+                color: 'white', fontSize: '1.8rem', fontWeight: 'bold',
+                border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+              }}>
+                {analysis.impactScore}
+              </div>
+              <p style={{ margin: '5px 0 0', fontWeight: 'bold', color: '#2E7D32' }}>Impact Score</p>
+            </div>
           </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">📊</div>
-            <h4 className="font-medium mb-2">Impact Calculation</h4>
-            <p className="text-sm text-gray-600">
-              Calculate return rates, packaging, and carbon footprint
-            </p>
+
+          {/* Impact Metrics Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+            <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1E88E5' }}>💧 {analysis.phantomFootprint.hiddenWaterUsageLiters.toLocaleString()} L</div>
+                <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>Hidden Water Usage</p>
+            </div>
+            <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#43A047' }}>💨 {analysis.phantomFootprint.totalCO2EquivalentKg} kg</div>
+                <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>Total CO₂ Footprint</p>
+            </div>
+            <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FB8C00' }}>🗑️ {analysis.phantomFootprint.productionWasteKg} kg</div>
+                <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>Production Waste</p>
+            </div>
+             <div style={{ textAlign: 'center', padding: '20px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#7E57C2' }}>✈️ {analysis.phantomFootprint.breakdown.transportCO2Kg} kg</div>
+                <p style={{ color: '#666', fontSize: '0.9rem', marginTop: '5px' }}>Transport CO₂ from {analysis.originCountry}</p>
+            </div>
           </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">⚠️</div>
-            <h4 className="font-medium mb-2">Real-time Alerts</h4>
-            <p className="text-sm text-gray-600">
-              Browser extension shows impact warnings
-            </p>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">💡</div>
-            <h4 className="font-medium mb-2">Recommendations</h4>
-            <p className="text-sm text-gray-600">
-              Suggest eco-friendly alternatives and practices
-            </p>
+
+          {/* Recommendations */}
+          <div>
+            <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>💡 Eco-Friendly Recommendations</h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {analysis.insights.map((rec, index) => (
+                <li key={index} style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '12px', background: 'rgba(255,255,255,0.6)',
+                  borderRadius: '8px', marginBottom: '8px'
+                }}>
+                  <span style={{ marginRight: '15px', color: '#1B5E20', fontSize: '1.5rem' }}>🌱</span>
+                  <span>{rec}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-      </Card>
+      )}
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };

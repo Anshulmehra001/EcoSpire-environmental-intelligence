@@ -77,7 +77,7 @@ class BiodiversityDatabase {
       const transaction = this.db.transaction(['audioRecordings', 'speciesObservations'], 'readwrite');
       const recordingStore = transaction.objectStore('audioRecordings');
       const speciesStore = transaction.objectStore('speciesObservations');
-      
+
       const recordingRecord = {
         id: recordingData.id || this.generateId(),
         timestamp: recordingData.timestamp || new Date().toISOString(),
@@ -99,7 +99,7 @@ class BiodiversityDatabase {
 
       // Save main recording
       const recordingRequest = recordingStore.add(recordingRecord);
-      
+
       recordingRequest.onsuccess = () => {
         // Save individual species observations
         const speciesPromises = (recordingData.detectedSpecies || []).map(species => {
@@ -130,7 +130,7 @@ class BiodiversityDatabase {
           .then(() => resolve(recordingRecord))
           .catch(reject);
       };
-      
+
       recordingRequest.onerror = () => reject(recordingRequest.error);
     });
   }
@@ -145,7 +145,7 @@ class BiodiversityDatabase {
       const transaction = this.db.transaction(['audioRecordings'], 'readonly');
       const store = transaction.objectStore('audioRecordings');
       const index = store.index('timestamp');
-      
+
       const request = index.openCursor(null, 'prev'); // Newest first
       const results = [];
       let count = 0;
@@ -170,15 +170,15 @@ class BiodiversityDatabase {
    */
   async getRecordingsByLocation(latitude, longitude, radiusKm = 10) {
     const allRecordings = await this.getAllRecordings(1000);
-    
+
     return allRecordings.filter(recording => {
       if (!recording.latitude || !recording.longitude) return false;
-      
+
       const distance = this.calculateDistance(
         latitude, longitude,
         recording.latitude, recording.longitude
       );
-      
+
       return distance <= radiusKm;
     });
   }
@@ -192,7 +192,7 @@ class BiodiversityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['speciesObservations'], 'readonly');
       const store = transaction.objectStore('speciesObservations');
-      
+
       let request;
       if (speciesName) {
         const index = store.index('speciesName');
@@ -201,7 +201,7 @@ class BiodiversityDatabase {
         const index = store.index('timestamp');
         request = index.openCursor(null, 'prev');
       }
-      
+
       if (speciesName) {
         request.onsuccess = () => resolve(request.result.slice(0, limit));
         request.onerror = () => reject(request.error);
@@ -291,7 +291,7 @@ class BiodiversityDatabase {
       });
 
       stats.topSpecies = Object.entries(speciesCounts)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 10)
         .map(([species, count]) => ({ species, count }));
     }
@@ -304,17 +304,17 @@ class BiodiversityDatabase {
    */
   async findBiodiversityHotspots(latitude, longitude, radiusKm = 50) {
     const nearbyRecordings = await this.getRecordingsByLocation(latitude, longitude, radiusKm);
-    
+
     // Group recordings by approximate location (grid-based)
     const gridSize = 0.01; // ~1km grid
     const locationGroups = {};
-    
+
     nearbyRecordings.forEach(recording => {
       if (recording.latitude && recording.longitude) {
         const gridLat = Math.round(recording.latitude / gridSize) * gridSize;
         const gridLng = Math.round(recording.longitude / gridSize) * gridSize;
         const key = `${gridLat.toFixed(3)}_${gridLng.toFixed(3)}`;
-        
+
         if (!locationGroups[key]) {
           locationGroups[key] = {
             latitude: gridLat,
@@ -324,7 +324,7 @@ class BiodiversityDatabase {
             avgBiodiversityScore: 0
           };
         }
-        
+
         locationGroups[key].recordings.push(recording);
         recording.detectedSpecies.forEach(species => {
           locationGroups[key].totalSpecies.add(species.name);
@@ -337,7 +337,7 @@ class BiodiversityDatabase {
       .map(group => {
         const avgScore = group.recordings.reduce((sum, rec) => sum + (rec.biodiversityScore || 0), 0) / group.recordings.length;
         const distance = this.calculateDistance(latitude, longitude, group.latitude, group.longitude);
-        
+
         return {
           latitude: group.latitude,
           longitude: group.longitude,
@@ -361,7 +361,7 @@ class BiodiversityDatabase {
    */
   async getSpeciesMigrationPatterns(speciesName) {
     const observations = await this.getSpeciesObservations(speciesName, 1000);
-    
+
     // Group by month
     const monthlyData = {};
     observations.forEach(obs => {
@@ -373,7 +373,7 @@ class BiodiversityDatabase {
           avgConfidence: 0
         };
       }
-      
+
       monthlyData[month].count++;
       if (obs.latitude && obs.longitude) {
         monthlyData[month].locations.push({
@@ -402,7 +402,7 @@ class BiodiversityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['userPreferences'], 'readwrite');
       const store = transaction.objectStore('userPreferences');
-      
+
       const request = store.put({ key, value, timestamp: new Date().toISOString() });
       request.onsuccess = () => resolve(value);
       request.onerror = () => reject(request.error);
@@ -418,7 +418,7 @@ class BiodiversityDatabase {
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction(['userPreferences'], 'readonly');
       const store = transaction.objectStore('userPreferences');
-      
+
       const request = store.get(key);
       request.onsuccess = () => {
         const result = request.result;
@@ -435,11 +435,11 @@ class BiodiversityDatabase {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
+
     const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
@@ -487,7 +487,7 @@ class BiodiversityDatabase {
       const transaction = this.db.transaction(['userPreferences'], 'readonly');
       const store = transaction.objectStore('userPreferences');
       const request = store.getAll();
-      
+
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
@@ -500,13 +500,13 @@ class BiodiversityDatabase {
     if (!this.db) await this.init();
 
     const stores = ['audioRecordings', 'speciesObservations', 'biodiversityHotspots', 'userPreferences', 'speciesLibrary'];
-    
+
     return Promise.all(stores.map(storeName => {
       return new Promise((resolve, reject) => {
         const transaction = this.db.transaction([storeName], 'readwrite');
         const store = transaction.objectStore(storeName);
         const request = store.clear();
-        
+
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });

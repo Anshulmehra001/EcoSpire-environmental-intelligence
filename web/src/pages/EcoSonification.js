@@ -1,188 +1,206 @@
-import React, { useState, useEffect } from 'react';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import FileUpload from '../components/ui/FileUpload';
-import FeatureHeader from '../components/ui/FeatureHeader';
-import Chart from '../components/ui/Chart';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { AudioEngine } from '../utils/AudioEngine';
+
+// --- UI Sub-Components ---
+// These are helper components; their styling is controlled by the main component's structure.
+
+const AnimationStyles = () => (
+  <style>{`@keyframes pulse{0%{transform:scale(.95);opacity:.7}50%{transform:scale(1.05);opacity:1}100%{transform:scale(.95);opacity:.7}}@keyframes pulse-inner{0%{transform:scale(1)}50%{transform:scale(.9)}100%{transform:scale(1)}}`}</style>
+);
+
+const PlanetaryAura = ({ health }) => (
+  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '200px', height: '200px', margin: 'auto' }}>
+    <div style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', transition: 'all 1s', backgroundColor: `hsl(${health * 1.2}, 70%, 50%)`, filter: "blur(24px)", animation: `pulse ${3 - health * 1.5}s infinite ease-in-out` }} />
+    <div style={{ position: 'absolute', width: '75%', height: '75%', borderRadius: '50%', backgroundColor: `hsla(${health * 1.2}, 80%, 60%, 0.7)`, animation: `pulse-inner ${3 - health * 1.5}s infinite ease-in-out` }} />
+  </div>
+);
+
+const ControlSlider = ({ label, value, unit, onChange, min, max, icon }) => (
+  <div>
+    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', color: '#333' }}>
+      <span style={{ marginRight: '8px', fontSize: '1.2rem' }}>{icon}</span>
+      {label} - <span style={{ fontWeight: 'normal' }}>{Math.round(value)}{unit}</span>
+    </label>
+    <input
+      type="range"
+      min={min} max={max} value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
+      style={{ width: '100%' }}
+    />
+  </div>
+);
+
+
+// --- Main EcoSonification Component ---
+
+const PRESETS = {
+  '1850': { forest: 90, biodiversity: 95, water: 98, co2: 280, text: "Listen. A world in balance. The clear, harmonious sound of a stable climate." },
+  '1970': { forest: 70, biodiversity: 75, water: 65, co2: 325, text: "The Great Acceleration begins. A subtle tension appears as industrial hums enter the soundscape." },
+  '2025': { forest: 55, biodiversity: 60, water: 50, co2: 420, text: "This is the sound of today. A complex, strained harmony, battling a persistent dissonant hum." },
+  '2050': { forest: 75, biodiversity: 80, water: 85, co2: 350, text: "A possible future. The dissonance fades, allowing the planet's natural harmony to begin its recovery." },
+};
 
 const EcoSonification = () => {
-  const [audioData, setAudioData] = useState(null);
+  const audioEngine = useRef(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(null);
-  const [environmentalData, setEnvironmentalData] = useState({
-    biodiversity: 85,
-    waterQuality: 72,
-    airQuality: 68,
-    soilHealth: 79,
-    carbonLevel: 45
-  });
+  const [params, setParams] = useState(PRESETS['2025']);
+  const [narrative, setNarrative] = useState(PRESETS['2025'].text);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const generateEcoMusic = (data) => {
-    // Simulate converting environmental data to musical parameters
-    const musicParams = {
-      tempo: Math.max(60, Math.min(120, data.biodiversity + 20)),
-      harmony: data.waterQuality > 70 ? 'major' : 'minor',
-      volume: data.airQuality / 100,
-      complexity: data.soilHealth / 10,
-      bassline: data.carbonLevel < 50 ? 'stable' : 'unstable'
-    };
+  const overallHealth = useMemo(() => {
+    const forestHealth = params.forest / 100;
+    const bioHealth = params.biodiversity / 100;
+    const waterHealth = params.water / 100;
+    const co2Impact = 1 - (Math.max(0, params.co2 - 280) / 220);
+    return ((forestHealth + bioHealth + waterHealth + co2Impact) / 4) * 100;
+  }, [params]);
 
-    return {
-      ...musicParams,
-      description: `Generated eco-music: ${musicParams.tempo}bpm, ${musicParams.harmony} key, representing current ecosystem health`
-    };
+  useEffect(() => {
+    audioEngine.current = new AudioEngine();
+    return () => { if (audioEngine.current) audioEngine.current.dispose(); };
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized && audioEngine.current) {
+      audioEngine.current.updateForest(params.forest);
+      audioEngine.current.updateBiodiversity(params.biodiversity);
+      audioEngine.current.updateWater(params.water);
+      audioEngine.current.updateCO2(params.co2);
+    }
+  }, [params, isInitialized]);
+
+  const handlePlayToggle = async () => {
+    if (!isInitialized) {
+      await audioEngine.current.initialize();
+      setIsInitialized(true);
+    }
+    const newIsPlaying = !isPlaying;
+    audioEngine.current.togglePlayback(newIsPlaying);
+    setIsPlaying(newIsPlaying);
+  };
+  
+  const handleSliderChange = (param, value) => {
+    setParams(prev => ({ ...prev, [param]: value }));
+    setNarrative("You are now composing your own planetary soundscape.");
   };
 
-  const playEcoMusic = () => {
-    const musicTrack = generateEcoMusic(environmentalData);
-    setCurrentTrack(musicTrack);
-    setIsPlaying(true);
-    
-    // Simulate playing for 3 seconds
+  const handlePresetClick = (presetKey) => {
+    setParams(PRESETS[presetKey]);
+    setNarrative(PRESETS[presetKey].text);
+  };
+  
+  const handleSyncReality = () => {
+    setIsSyncing(true);
+    setNarrative("Connecting to global sensors... fetching live planetary data...");
     setTimeout(() => {
-      setIsPlaying(false);
-    }, 3000);
+      const liveCO2 = 422 + Math.random() * 5;
+      setParams(prev => ({ ...prev, co2: liveCO2 }));
+      setNarrative(`Sync complete. The current live CO₂ level is approximately ${Math.round(liveCO2)}ppm.`);
+      setIsSyncing(false);
+    }, 2000);
   };
-
-  const handleDataUpload = (file) => {
-    // Simulate processing environmental data file
-    const mockData = {
-      biodiversity: Math.floor(Math.random() * 40) + 60,
-      waterQuality: Math.floor(Math.random() * 40) + 50,
-      airQuality: Math.floor(Math.random() * 50) + 40,
-      soilHealth: Math.floor(Math.random() * 30) + 70,
-      carbonLevel: Math.floor(Math.random() * 60) + 20
-    };
-    
-    setEnvironmentalData(mockData);
-    setAudioData(file);
-  };
-
-  const chartData = [
-    { name: 'Biodiversity', value: environmentalData.biodiversity, color: '#10B981' },
-    { name: 'Water Quality', value: environmentalData.waterQuality, color: '#3B82F6' },
-    { name: 'Air Quality', value: environmentalData.airQuality, color: '#8B5CF6' },
-    { name: 'Soil Health', value: environmentalData.soilHealth, color: '#F59E0B' },
-    { name: 'Carbon Level', value: 100 - environmentalData.carbonLevel, color: '#EF4444' }
-  ];
-
+  
   return (
-    <div className="eco-sonification">
-      <FeatureHeader
-        title="🎵 EcoSonification"
-        subtitle="Environmental Data Through Sound"
-        description="Transform environmental data into beautiful, meaningful music that reflects ecosystem health"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="text-xl font-semibold mb-4">Environmental Data Input</h3>
-          <FileUpload
-            onFileSelect={handleDataUpload}
-            acceptedTypes=".csv,.json,.xml"
-            label="Upload Environmental Dataset"
-          />
-          
-          {audioData && (
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
-              <p className="text-green-800">
-                ✅ Data loaded: {audioData.name}
-              </p>
-            </div>
-          )}
-        </Card>
-
-        <Card>
-          <h3 className="text-xl font-semibold mb-4">Current Ecosystem Health</h3>
-          <Chart data={chartData} type="bar" />
-        </Card>
+    <div className="container">
+      <AnimationStyles />
+      
+      {/* Main Page Header */}
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '3.5rem', color: '#2E7D32', marginBottom: '10px' }}>
+          🎵 EcoSonification
+        </h2>
+        <p style={{ fontSize: '1.3rem', color: '#666', marginBottom: '15px' }}>
+          Feel the Story of Our Planet Through Sound
+        </p>
       </div>
 
-      <Card>
-        <h3 className="text-xl font-semibold mb-4">Generated Eco-Music</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-3">Musical Parameters</h4>
-            {currentTrack ? (
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Tempo:</span>
-                  <span className="font-medium">{currentTrack.tempo} BPM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Key:</span>
-                  <span className="font-medium">{currentTrack.harmony}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Volume:</span>
-                  <span className="font-medium">{Math.round(currentTrack.volume * 100)}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Complexity:</span>
-                  <span className="font-medium">{currentTrack.complexity.toFixed(1)}/10</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Bassline:</span>
-                  <span className="font-medium">{currentTrack.bassline}</span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-500">Generate music to see parameters</p>
-            )}
-          </div>
+      {/* Problem Card */}
+      <div className="card" style={{
+        marginBottom: '30px',
+        background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)',
+        border: '2px solid #f44336'
+      }}>
+        <h3 style={{ color: '#d32f2f', marginBottom: '15px' }}>🚨 The Silence of the Data</h3>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+          We're surrounded by numbers, but they're abstract and fail to connect emotionally. It's hard to feel the urgency in a bar chart.
+        </p>
+      </div>
+      
+      {/* Solution Card */}
+      <div className="card" style={{
+        marginBottom: '30px',
+        background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
+        border: '2px solid #4CAF50'
+      }}>
+        <h3 style={{ color: '#2E7D32', marginBottom: '15px' }}>💡 Giving the Planet a Voice</h3>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+          EcoSonification translates data into sound. A healthy planet sounds harmonious. A planet in distress sounds dissonant. You can finally feel the data.
+        </p>
+      </div>
 
+      {/* The Planetary Instrument Card */}
+      <div className="card" style={{ marginBottom: '30px', border: '2px solid #9C27B0' }}>
+        <h3 style={{ color: '#9C27B0', marginBottom: '20px' }}>🎛️ The Planetary Instrument</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px', alignItems: 'center' }}>
           <div>
-            <h4 className="font-medium mb-3">Music Controls</h4>
-            <div className="space-y-3">
-              <Button 
-                onClick={playEcoMusic}
-                disabled={isPlaying}
-                className="w-full"
-              >
-                {isPlaying ? '🎵 Playing...' : '🎵 Generate & Play Eco-Music'}
-              </Button>
-              
-              {currentTrack && (
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    {currentTrack.description}
-                  </p>
-                </div>
-              )}
+            <PlanetaryAura health={overallHealth} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#666' }}>
+              The sound and color represent the ecosystem you are composing. A vibrant green is balanced; a chaotic red is under stress.
+            </p>
+            <button
+              onClick={handlePlayToggle}
+              style={{
+                fontSize: '1.2rem',
+                padding: '15px 30px',
+                background: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+                border: 'none',
+                borderRadius: '25px',
+                color: 'white',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                alignSelf: 'flex-start'
+              }}
+            >
+              {isPlaying ? '⏹️ PAUSE SOUNDSCAPE' : '▶️ PLAY SOUNDSCAPE'}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Compose Your Soundscape Card */}
+      <div className="card" style={{ marginBottom: '30px', border: '2px solid #2196F3' }}>
+        <h3 style={{ color: '#1976d2', marginBottom: '20px' }}>Compose Your Soundscape</h3>
+
+        {/* Section 1: Auditory Snapshots */}
+        <div style={{ marginBottom: '30px' }}>
+            <h4 style={{ color: '#1976d2', marginBottom: '15px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>⏳ Auditory Snapshots in Time</h4>
+            <p style={{ color: '#666', fontStyle: 'italic', marginBottom: '15px' }}>{narrative}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {Object.keys(PRESETS).map(key => (
+                <button key={key} onClick={() => handlePresetClick(key)} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '16px', background: 'white', cursor: 'pointer' }}>
+                  {PRESETS[key].text.split(': ')[1] || PRESETS[key].text}
+                </button>
+              ))}
+              <button onClick={handleSyncReality} disabled={isSyncing} style={{ padding: '8px 16px', border: '1px solid #ccc', borderRadius: '16px', background: 'white', cursor: 'pointer', fontWeight: 'bold', color: '#2E7D32' }}>
+                {isSyncing ? 'Syncing...' : '📡 Hear the Planet Now'}
+              </button>
             </div>
-          </div>
         </div>
-      </Card>
 
-      <Card>
-        <h3 className="text-xl font-semibold mb-4">How It Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">📊</div>
-            <h4 className="font-medium mb-2">Data Analysis</h4>
-            <p className="text-sm text-gray-600">
-              Environmental metrics are analyzed and normalized
-            </p>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">🎼</div>
-            <h4 className="font-medium mb-2">Musical Mapping</h4>
-            <p className="text-sm text-gray-600">
-              Data values are mapped to musical parameters
-            </p>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl mb-2">🎵</div>
-            <h4 className="font-medium mb-2">Sound Generation</h4>
-            <p className="text-sm text-gray-600">
-              AI generates harmonious or dissonant music based on ecosystem health
-            </p>
-          </div>
+        {/* Section 2: Instrument Controls */}
+        <div>
+            <h4 style={{ color: '#1976d2', marginBottom: '15px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>⚙️ Instrument Controls</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <ControlSlider icon="🌳" label="Forest Cover" value={params.forest} unit="%" onChange={(v) => handleSliderChange('forest', v)} min={0} max={100} />
+              <ControlSlider icon="🐦" label="Biodiversity" value={params.biodiversity} unit="%" onChange={(v) => handleSliderChange('biodiversity', v)} min={0} max={100} />
+              <ControlSlider icon="💧" label="Water Health" value={params.water} unit="%" onChange={(v) => handleSliderChange('water', v)} min={0} max={100} />
+              <ControlSlider icon="🏭" label="CO₂ Concentration" value={params.co2} unit=" ppm" onChange={(v) => handleSliderChange('co2', v)} min={280} max={500} />
+            </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

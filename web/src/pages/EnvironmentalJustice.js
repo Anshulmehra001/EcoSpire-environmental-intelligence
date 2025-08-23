@@ -16,6 +16,7 @@ const EnvironmentalJustice = () => {
   }, []);
 
   const loadMapData = () => {
+    // --- EXPANDED TO 9 REAL-WORLD SCENARIOS ---
     const mockData = [
       {
         id: 1,
@@ -56,6 +57,85 @@ const EnvironmentalJustice = () => {
         ],
         injusticeScore: 0.94,
         healthImpacts: ['Lead poisoning rates 4.2x higher', 'Developmental delays increased']
+      },
+      {
+        id: 4,
+        name: 'Cancer Alley, Louisiana',
+        coordinates: { lat: 30.2, lng: -90.9 },
+        population: 25000,
+        demographics: { minority: 0.62, lowincome: 0.55 },
+        hazards: [
+          { type: 'Petrochemical Plants', severity: 'Critical' },
+          { type: 'Air Toxins', severity: 'Critical' }
+        ],
+        injusticeScore: 0.96,
+        healthImpacts: ['Highest cancer risk in the US', 'Frequent chemical spills']
+      },
+      {
+        id: 5,
+        name: 'The Bronx, NY',
+        coordinates: { lat: 40.8, lng: -73.9 },
+        population: 1400000,
+        demographics: { minority: 0.91, lowincome: 0.30 },
+        hazards: [
+          { type: 'Highway Proximity', severity: 'High' },
+          { type: 'Waste Transfer Stations', severity: 'High' }
+        ],
+        injusticeScore: 0.85,
+        healthImpacts: ['Highest asthma hospitalization rates in NYC']
+      },
+      {
+        id: 6,
+        name: 'Kettleman City, CA',
+        coordinates: { lat: 36.0, lng: -120.0 },
+        population: 1500,
+        demographics: { minority: 0.96, lowincome: 0.45 },
+        hazards: [
+          { type: 'Hazardous Waste Landfill', severity: 'Critical' },
+          { type: 'Pesticide Drift', severity: 'High' }
+        ],
+        injusticeScore: 0.91,
+        healthImpacts: ['Concerns over birth defects and infant mortality']
+      },
+      {
+        id: 7,
+        name: 'Pike County, Kentucky',
+        coordinates: { lat: 37.4, lng: -82.5 },
+        population: 58000,
+        demographics: { minority: 0.04, lowincome: 0.28 },
+        hazards: [
+          { type: 'Coal Ash Ponds', severity: 'Critical' },
+          { type: 'Contaminated Groundwater', severity: 'High' }
+        ],
+        injusticeScore: 0.88,
+        healthImpacts: ['High rates of respiratory illness and cancer clusters']
+      },
+      {
+        id: 8,
+        name: 'Standing Rock, ND',
+        coordinates: { lat: 46.4, lng: -100.8 },
+        population: 8200,
+        demographics: { minority: 0.85, lowincome: 0.35 },
+        hazards: [
+          { type: 'Oil Pipeline Risk', severity: 'Critical' },
+          { type: 'Water Security Threat', severity: 'Critical' }
+        ],
+        injusticeScore: 0.93,
+        healthImpacts: ['Threats to sacred water sources', 'Stress-related health impacts']
+      },
+      {
+        id: 9,
+        name: 'Pacoima, Los Angeles, CA',
+        coordinates: { lat: 34.2, lng: -118.4 },
+        population: 104000,
+        demographics: { minority: 0.92, lowincome: 0.25 },
+        hazards: [
+          { type: 'Urban Heat Island', severity: 'High' },
+          { type: 'Freeway Pollution', severity: 'Critical' },
+          { type: 'Lack of Green Space', severity: 'High' }
+        ],
+        injusticeScore: 0.86,
+        healthImpacts: ['Heat-related illnesses', 'High asthma rates due to pollution']
       }
     ];
     
@@ -113,6 +193,18 @@ const EnvironmentalJustice = () => {
           ]
         }
       };
+
+      // --- ADDED POLICY RECOMMENDATIONS ---
+      analysis.policyRecommendations = [
+        'Strengthen air quality monitoring in high-risk zones.',
+        'Increase buffer zones between industrial sites and residential areas.',
+        'Fund local health studies to quantify health impacts.',
+        'Establish community-led environmental review boards.',
+        'Invest in green infrastructure and clean energy projects in affected communities.'
+      ];
+      if (analysis.environmentalBurden.waterQuality.leadLevels > 15) {
+        analysis.policyRecommendations.unshift('**Immediate action: Replace lead service lines and provide clean water relief.**');
+      }
       
       setAnalysisData(analysis);
       setLoading(false);
@@ -317,6 +409,39 @@ const EnvironmentalJustice = () => {
             />
           </div>
 
+          {/* --- SOCIOECONOMIC VULNERABILITY CARD IS INCLUDED --- */}
+          <div className="card">
+            <h3 style={{ color: '#1976D2', marginBottom: '20px' }}>💰 Socioeconomic Vulnerability</h3>
+            <ImpactMetrics
+              metrics={[
+                {
+                  icon: '💵',
+                  value: analysisData.economicFactors.medianIncome.toLocaleString(),
+                  label: 'Median Income',
+                  color: analysisData.economicFactors.medianIncome < 40000 ? '#f44336' : '#FF9800',
+                  unit: ' USD',
+                  description: `National average: $${analysisData.economicFactors.nationalAverages.medianIncome.toLocaleString()}`
+                },
+                {
+                  icon: '📉',
+                  value: (analysisData.economicFactors.povertyRate * 100).toFixed(1),
+                  label: 'Poverty Rate',
+                  color: analysisData.economicFactors.povertyRate > 0.2 ? '#f44336' : '#FF9800',
+                  unit: '%',
+                  description: `National average: ${(analysisData.economicFactors.nationalAverages.povertyRate * 100).toFixed(1)}%`
+                },
+                {
+                  icon: '🧑‍💼',
+                  value: analysisData.economicFactors.unemploymentRate,
+                  label: 'Unemployment',
+                  color: analysisData.economicFactors.unemploymentRate > 10 ? '#f44336' : '#FF9800',
+                  unit: '%',
+                  description: `National average: ${analysisData.economicFactors.nationalAverages.unemploymentRate}%`
+                }
+              ]}
+            />
+          </div>
+
           <div className="card">
             <h3 style={{ color: '#1976D2', marginBottom: '20px' }}>📢 Advocacy & Action Resources</h3>
             
@@ -361,6 +486,31 @@ const EnvironmentalJustice = () => {
               </div>
             </div>
           </div>
+
+          {/* --- POLICY RECOMMENDATIONS CARD IS INCLUDED --- */}
+          {analysisData.policyRecommendations && (
+              <div className="card" style={{ background: '#e8f5e8', border: '2px solid #4CAF50' }}>
+                <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📜 Policy Recommendations</h3>
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  {analysisData.policyRecommendations.map((rec, index) => (
+                    <div key={index} style={{
+                      background: 'white',
+                      padding: '12px 15px',
+                      borderRadius: '8px',
+                      color: '#333',
+                      fontSize: '0.95rem',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      <span style={{ color: '#2E7D32' }}>•</span>
+                      <p style={{ margin: 0 }} dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+          )}
         </div>
       )}
 

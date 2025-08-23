@@ -14,188 +14,50 @@ const BioStreamAI = () => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
-      analyzeDNA(file);
     }
   };
 
   const analyzeDNA = async (dnaFile) => {
     setLoading(true);
-    
-    // Simulate advanced DNA analysis
-    setTimeout(async () => {
-      const mockAnalysis = {
+    setAnalysis(null); // It's good practice to clear old results
+
+    // FormData will package the file for sending
+    const formData = new FormData();
+    formData.append('dnaFile', dnaFile);
+
+    try {
+      // This is the new code that calls your server
+      const response = await fetch('http://localhost:5000/api/analyze-dna', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      const analysisData = await response.json();
+      console.log("Frontend: Received analysis from backend:", analysisData);
+
+      // Update the screen with the real data from the backend
+      const finalReport = {
+        ...analysisData,
         fileName: dnaFile.name,
         fileSize: (dnaFile.size / 1024 / 1024).toFixed(2) + ' MB',
-        sequenceLength: '2.4 million base pairs',
-        processingTime: '3.7 seconds',
-        confidence: 94,
-        waterSource: waterSource || 'Unknown',
-        location: sampleLocation || 'Unknown',
-        detectedSpecies: [
-          {
-            species: 'Salmo trutta',
-            commonName: 'Brown Trout',
-            kingdom: 'Animalia',
-            phylum: 'Chordata',
-            confidence: 98.5,
-            abundance: 'High',
-            dnaFragments: 1247,
-            ecologicalRole: 'Top predator',
-            conservationStatus: 'Least Concern',
-            indicators: ['Healthy fish population', 'Good water quality']
-          },
-          {
-            species: 'Procambarus clarkii',
-            commonName: 'Red Swamp Crayfish',
-            kingdom: 'Animalia',
-            phylum: 'Arthropoda',
-            confidence: 96.2,
-            abundance: 'Medium',
-            dnaFragments: 892,
-            ecologicalRole: 'Detritivore',
-            conservationStatus: 'Invasive Species',
-            indicators: ['Ecosystem disruption', 'Non-native presence']
-          },
-          {
-            species: 'Chlorella vulgaris',
-            commonName: 'Green Algae',
-            kingdom: 'Plantae',
-            phylum: 'Chlorophyta',
-            confidence: 94.8,
-            abundance: 'Very High',
-            dnaFragments: 2156,
-            ecologicalRole: 'Primary producer',
-            conservationStatus: 'Native',
-            indicators: ['High nutrient levels', 'Eutrophication risk']
-          },
-          {
-            species: 'Escherichia coli',
-            commonName: 'E. coli',
-            kingdom: 'Bacteria',
-            phylum: 'Proteobacteria',
-            confidence: 99.1,
-            abundance: 'Low',
-            dnaFragments: 445,
-            ecologicalRole: 'Decomposer',
-            conservationStatus: 'Pathogen Indicator',
-            indicators: ['Fecal contamination', 'Health risk']
-          },
-          {
-            species: 'Daphnia magna',
-            commonName: 'Water Flea',
-            kingdom: 'Animalia',
-            phylum: 'Arthropoda',
-            confidence: 97.3,
-            abundance: 'High',
-            dnaFragments: 1034,
-            ecologicalRole: 'Filter feeder',
-            conservationStatus: 'Native',
-            indicators: ['Healthy zooplankton', 'Good food web']
-          },
-          {
-            species: 'Pseudomonas aeruginosa',
-            commonName: 'Blue-green Bacteria',
-            kingdom: 'Bacteria',
-            phylum: 'Proteobacteria',
-            confidence: 91.7,
-            abundance: 'Medium',
-            dnaFragments: 623,
-            ecologicalRole: 'Biofilm former',
-            conservationStatus: 'Opportunistic Pathogen',
-            indicators: ['Biofilm presence', 'Potential contamination']
-          },
-          {
-            species: 'Lemna minor',
-            commonName: 'Common Duckweed',
-            kingdom: 'Plantae',
-            phylum: 'Angiosperms',
-            confidence: 95.4,
-            abundance: 'Medium',
-            dnaFragments: 756,
-            ecologicalRole: 'Aquatic plant',
-            conservationStatus: 'Native',
-            indicators: ['Nutrient uptake', 'Habitat structure']
-          },
-          {
-            species: 'Chironomus plumosus',
-            commonName: 'Midge Larvae',
-            kingdom: 'Animalia',
-            phylum: 'Arthropoda',
-            confidence: 93.6,
-            abundance: 'High',
-            dnaFragments: 987,
-            ecologicalRole: 'Detritivore',
-            conservationStatus: 'Native',
-            indicators: ['Sediment health', 'Nutrient cycling']
-          }
-        ],
-        biodiversityMetrics: {
-          speciesRichness: 8,
-          shannonIndex: 2.34,
-          simpsonIndex: 0.82,
-          evenness: 0.78,
-          biodiversityScore: 85,
-          ecosystemHealth: 'Good'
-        },
-        ecologicalAnalysis: {
-          trophicLevels: {
-            producers: 2,
-            primaryConsumers: 3,
-            secondaryConsumers: 1,
-            decomposers: 2
-          },
-          foodWebComplexity: 'Moderate',
-          keySpeciesPresent: ['Brown Trout', 'Water Flea', 'Green Algae'],
-          ecologicalConcerns: ['Invasive crayfish', 'E. coli contamination', 'Eutrophication risk'],
-          positiveIndicators: ['Diverse fish population', 'Active nutrient cycling', 'Stable food web']
-        },
-        waterQualityAssessment: {
-          overallQuality: 'Good',
-          pollutionLevel: 'Low to Moderate',
-          pathogenRisk: 'Low',
-          eutrophicationRisk: 'Moderate',
-          biodiversityHealth: 'Good',
-          recommendations: [
-            'Monitor E. coli levels regularly',
-            'Control invasive crayfish population',
-            'Reduce nutrient inputs to prevent algal blooms',
-            'Maintain riparian vegetation',
-            'Continue biodiversity monitoring'
-          ]
-        },
-        genomicInsights: {
-          totalDNAFragments: 8140,
-          uniqueGenomes: 8,
-          averageFragmentLength: '295 base pairs',
-          sequencingDepth: '45x coverage',
-          novelSequences: 12,
-          functionalGenes: {
-            nitrogenCycle: 23,
-            carbonCycle: 18,
-            pollutantDegradation: 7,
-            antibioticResistance: 3
-          }
-        }
       };
-      
-      setAnalysis(mockAnalysis);
-      
-      // Log activity for dashboard
-      try {
-        const { authManager } = await import('../utils/auth');
-        await authManager.logActivity('Environmental DNA analyzed', {
-          speciesDetected: mockAnalysis.detectedSpecies.length,
-          biodiversityScore: mockAnalysis.biodiversityMetrics.biodiversityScore,
-          waterSource: waterSource,
-          location: sampleLocation
-        });
-      } catch (error) {
-        console.warn('Failed to log activity:', error);
-      }
-      
+      setAnalysis(finalReport);
+
+    } catch (error) {
+      console.error('Failed to fetch DNA analysis:', error);
+    } finally {
+      // This part always runs to make sure the spinner stops
       setLoading(false);
-    }, 4000);
+    }
   };
+    
+
+    
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -205,7 +67,6 @@ const BioStreamAI = () => {
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       setSelectedFile(files[0]);
-      analyzeDNA(files[0]);
     }
   };
 
@@ -458,6 +319,28 @@ const BioStreamAI = () => {
             <p><strong>Size:</strong> {(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
           </div>
         )}
+
+        {/* --- NEW ANALYSIS BUTTON --- */}
+{selectedFile && !loading && !analysis && (
+  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+    <button
+      onClick={() => analyzeDNA(selectedFile)} // Pass the selected file to the function
+      style={{
+        fontSize: '1.2rem',
+        padding: '15px 30px',
+        background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+        border: 'none',
+        borderRadius: '25px',
+        color: 'white',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+      }}
+    >
+      🔬 Analyze DNA Sequence
+    </button>
+  </div>
+)}
+
       </div>
 
       {/* Analysis Results */}
@@ -479,252 +362,84 @@ const BioStreamAI = () => {
         </div>
       )}
 
+      
+                   {/* --- FINAL, ULTRA-ROBUST RESULTS DISPLAY --- */}
       {analysis && !loading && (
         <div style={{ display: 'grid', gap: '30px' }}>
-          {/* Analysis Overview */}
-          <div className="card">
-            <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📊 Genetic Analysis Overview</h3>
-            
-            <div style={{
-              background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
-              padding: '20px',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: '2px solid #4CAF50'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h4 style={{ color: '#2E7D32', margin: 0 }}>
-                  Ecosystem Health: {analysis.biodiversityMetrics.ecosystemHealth}
-                </h4>
-                <div style={{
-                  background: getHealthColor(analysis.biodiversityMetrics.ecosystemHealth),
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
-                }}>
-                  Biodiversity Score: {analysis.biodiversityMetrics.biodiversityScore}
+
+          {/* --- Analysis Overview Card --- */}
+          {analysis.biodiversityMetrics && (
+            <div className="card">
+              <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📊 Genetic Analysis Overview</h3>
+              <div style={{
+                background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
+                padding: '20px', borderRadius: '12px', border: '2px solid #4CAF50'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ color: '#2E7D32', margin: 0 }}>
+                    Ecosystem Health: {analysis.biodiversityMetrics.ecosystemHealth || 'N/A'}
+                  </h4>
+                  <div style={{
+                    background: getHealthColor(analysis.biodiversityMetrics.ecosystemHealth),
+                    color: 'white', padding: '8px 16px', borderRadius: '20px',
+                    fontSize: '0.9rem', fontWeight: 'bold'
+                  }}>
+                    Biodiversity Score: {analysis.biodiversityMetrics.biodiversityScore || 'N/A'}
+                  </div>
                 </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', fontSize: '0.9rem' }}>
-                <div><strong>Species Detected:</strong> {analysis.detectedSpecies.length}</div>
-                <div><strong>DNA Fragments:</strong> {analysis.genomicInsights.totalDNAFragments.toLocaleString()}</div>
-                <div><strong>Processing Time:</strong> {analysis.processingTime}</div>
-                <div><strong>Confidence:</strong> {analysis.confidence}%</div>
               </div>
             </div>
+          )}
 
-            {/* Biodiversity Metrics */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', marginBottom: '20px' }}>
-              <div style={{ textAlign: 'center', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                  {analysis.biodiversityMetrics.speciesRichness}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>Species Richness</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2196F3' }}>
-                  {analysis.biodiversityMetrics.shannonIndex}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>Shannon Index</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF9800' }}>
-                  {analysis.biodiversityMetrics.evenness}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>Evenness</div>
-              </div>
-              <div style={{ textAlign: 'center', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#9C27B0' }}>
-                  {analysis.biodiversityMetrics.simpsonIndex}
-                </div>
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>Simpson Index</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Species Detection */}
+          {/* --- Detected Species Card --- */}
           <div className="card">
             <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🔬 Detected Species</h3>
-            
-            <div style={{ display: 'grid', gap: '15px' }}>
-              {analysis.detectedSpecies.map((species, index) => (
-                <div key={index} style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  background: '#f9f9f9'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '15px' }}>
-                    <div>
+            {analysis.detectedSpecies && analysis.detectedSpecies.length > 0 ? (
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {analysis.detectedSpecies.map((species, index) => (
+                  <div key={index} style={{
+                    border: '1px solid #ddd', borderRadius: '8px',
+                    padding: '20px', background: '#f9f9f9'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div>
                       <h5 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '5px' }}>
-                        {species.species} ({species.commonName})
-                      </h5>
-                      <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '5px' }}>
-                        {species.kingdom} • {species.phylum}
-                      </p>
-                      <p style={{ color: '#666', fontSize: '0.9rem' }}>
-                        Role: {species.ecologicalRole}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{
-                        background: getAbundanceColor(species.abundance),
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.8rem',
-                        fontWeight: 'bold',
-                        marginBottom: '5px'
-                      }}>
-                        {species.abundance} Abundance
+  {species.species || 'Unknown Species'} ({species.commonName || ''})
+</h5>
+<p style={{ color: '#666', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+  ID: {species.blastId || 'N/A'}
+</p>
                       </div>
-                      <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                        {species.confidence}% confidence
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '0.9rem', marginBottom: '15px' }}>
-                    <div>
-                      <strong>DNA Fragments:</strong> {species.dnaFragments.toLocaleString()}
-                    </div>
-                    <div style={{ color: getStatusColor(species.conservationStatus) }}>
-                      <strong>Status:</strong> {species.conservationStatus}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ fontSize: '0.9rem' }}>Ecological Indicators:</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-                      {species.indicators.map((indicator, i) => (
-                        <span key={i} style={{
-                          background: indicator.includes('risk') || indicator.includes('contamination') || indicator.includes('disruption') ? '#ffebee' : '#e8f5e8',
-                          color: indicator.includes('risk') || indicator.includes('contamination') || indicator.includes('disruption') ? '#d32f2f' : '#2E7D32',
-                          padding: '4px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold'
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{
+                          background: getAbundanceColor(species.abundance),
+                          color: 'white', padding: '4px 8px', borderRadius: '12px'
                         }}>
-                          {indicator}
-                        </span>
-                      ))}
+                          {species.abundance || 'N/A'} Abundance
+                        </div>
+                        <p>{species.confidence || 'N/A'}% Confidence</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Ecological Analysis */}
-          <div className="card">
-            <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🌊 Ecosystem Analysis</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-              <div>
-                <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>🔗 Food Web Structure</h4>
-                <div style={{ display: 'grid', gap: '10px' }}>
-                  {Object.entries(analysis.ecologicalAnalysis.trophicLevels).map(([level, count]) => (
-                    <div key={level} style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      padding: '10px',
-                      background: '#f9f9f9',
-                      borderRadius: '8px'
-                    }}>
-                      <span style={{ textTransform: 'capitalize' }}>{level.replace(/([A-Z])/g, ' $1')}:</span>
-                      <span style={{ fontWeight: 'bold' }}>{count} species</span>
-                    </div>
-                  ))}
-                </div>
-                <p style={{ marginTop: '15px', fontSize: '0.9rem', color: '#666' }}>
-                  <strong>Food Web Complexity:</strong> {analysis.ecologicalAnalysis.foodWebComplexity}
-                </p>
-              </div>
-              
-              <div>
-                <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>⚠️ Ecological Concerns</h4>
-                <div style={{ marginBottom: '20px' }}>
-                  {analysis.ecologicalAnalysis.ecologicalConcerns.map((concern, index) => (
-                    <div key={index} style={{
-                      padding: '8px 12px',
-                      background: '#ffebee',
-                      color: '#d32f2f',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
-                      fontSize: '0.9rem',
-                      fontWeight: 'bold'
-                    }}>
-                      • {concern}
-                    </div>
-                  ))}
-                </div>
-                
-                <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>✅ Positive Indicators</h4>
-                <div>
-                  {analysis.ecologicalAnalysis.positiveIndicators.map((indicator, index) => (
-                    <div key={index} style={{
-                      padding: '8px 12px',
-                      background: '#e8f5e8',
-                      color: '#2E7D32',
-                      borderRadius: '8px',
-                      marginBottom: '8px',
-                      fontSize: '0.9rem',
-                      fontWeight: 'bold'
-                    }}>
-                      • {indicator}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Water Quality Assessment */}
-          <div className="card">
-            <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>💧 Water Quality Assessment</h3>
-            
-            <div style={{
-              background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-              padding: '20px',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: '2px solid #2196F3'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h4 style={{ color: '#1976d2', margin: 0 }}>
-                  Overall Quality: {analysis.waterQualityAssessment.overallQuality}
-                </h4>
-                <div style={{
-                  background: '#2196F3',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
-                }}>
-                  {analysis.waterQualityAssessment.pollutionLevel} Pollution
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', fontSize: '0.9rem' }}>
-                <div><strong>Pathogen Risk:</strong> {analysis.waterQualityAssessment.pathogenRisk}</div>
-                <div><strong>Eutrophication Risk:</strong> {analysis.waterQualityAssessment.eutrophicationRisk}</div>
-                <div><strong>Biodiversity Health:</strong> {analysis.waterQualityAssessment.biodiversityHealth}</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>📋 Recommendations</h4>
-              <ol style={{ paddingLeft: '20px', lineHeight: '1.6' }}>
-                {analysis.waterQualityAssessment.recommendations.map((rec, index) => (
-                  <li key={index} style={{ marginBottom: '8px' }}>{rec}</li>
                 ))}
-              </ol>
-            </div>
+              </div>
+            ) : (
+               <p>{analysis.error ? `Analysis Error: ${analysis.error}` : "No species from the database were detected in this sample."}</p>
+            )}
           </div>
+
+          {/* --- Recommendations Card --- */}
+          {analysis.waterQualityAssessment && (
+            <div className="card">
+              <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📋 Recommendations</h3>
+              <ul>
+                {analysis.waterQualityAssessment.recommendations?.map((rec, i) => <li key={i}>{rec}</li>) || <li>No recommendations available.</li>}
+              </ul>
+            </div>
+          )}
         </div>
       )}
+        
 
       <style jsx>{`
         @keyframes spin {

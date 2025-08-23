@@ -173,6 +173,7 @@ const DigitalQuarry = () => {
   };
 
   const getDemandColor = (demand) => {
+    if (!demand || typeof demand !== 'string') return '#4CAF50';
     if (demand.includes('Critical')) return '#f44336';
     if (demand.includes('Very High')) return '#FF5722';
     if (demand.includes('High')) return '#FF9800';
@@ -482,7 +483,7 @@ const DigitalQuarry = () => {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', fontSize: '0.9rem', marginBottom: '15px' }}>
                         <div><strong>Weight:</strong> {material.weight}</div>
                         <div><strong>CO₂ Savings:</strong> {material.co2Savings} tons</div>
-                        <div style={{ color: getDemandColor(analysis.marketDemand[material.type.toLowerCase().split(' ')[0]]) }}>
+                        <div style={{ color: getDemandColor(analysis.marketDemand[material.type.toLowerCase().split(' ')[0]] || 'Medium') }}>
                           <strong>Market Demand:</strong> {analysis.marketDemand[material.type.toLowerCase().split(' ')[0]] || 'Medium'}
                         </div>
                       </div>

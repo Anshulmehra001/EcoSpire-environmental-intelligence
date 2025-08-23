@@ -12,6 +12,33 @@ const FoodWasteReduction = () => {
   const [availableFood, setAvailableFood] = useState([]);
   const [impactStats, setImpactStats] = useState({ meals: 0, co2: 0, money: 0 });
 
+  const foodRescueApps = [
+    {
+      name: "Too Good To Go",
+      category: "Consumer Surplus",
+      description: "Rescue 'Surprise Bags' of unsold food from local stores and restaurants.",
+      features: ["Discounted food bags", "Map-based search", "Large network of partners"],
+      link: "https://www.toogoodtogo.com/",
+      rating: 4.8
+    },
+    {
+      name: "Olio",
+      category: "Community Sharing",
+      description: "Connect with neighbors and local businesses to share surplus food for free.",
+      features: ["Peer-to-peer sharing", "Food and non-food items", "Volunteer program"],
+      link: "https://olioapp.com/",
+      rating: 4.7
+    },
+    {
+      name: "Food Rescue US",
+      category: "Volunteer-led",
+      description: "A platform for volunteers to transport surplus food from donors to social service agencies.",
+      features: ["Volunteer-driven", "Direct donor-to-agency", "Impact tracking"],
+      link: "https://foodrescue.us/",
+      rating: 4.6
+    }
+  ];
+
   useEffect(() => {
     loadAvailableFood();
     loadImpactStats();
@@ -19,53 +46,10 @@ const FoodWasteReduction = () => {
 
   const loadAvailableFood = () => {
     const mockFood = [
-      {
-        id: 1,
-        business: 'Green Valley Grocery',
-        type: 'Grocery Store',
-        items: ['Fresh produce mix', 'Bakery items', 'Dairy products'],
-        quantity: '50 lbs',
-        originalPrice: 125,
-        discountedPrice: 25,
-        expiryTime: '2 hours',
-        distance: 0.8,
-        category: 'Mixed',
-        pickupTime: '6:00 PM - 8:00 PM',
-        allergens: ['Dairy', 'Gluten'],
-        photo: null,
-        urgency: 'high'
-      },
-      {
-        id: 2,
-        business: 'Bella Vista Restaurant',
-        type: 'Restaurant',
-        items: ['Prepared meals', 'Fresh salads', 'Soup portions'],
-        quantity: '20 portions',
-        originalPrice: 200,
-        discountedPrice: 40,
-        expiryTime: '1 hour',
-        distance: 1.2,
-        category: 'Prepared Food',
-        pickupTime: '9:00 PM - 10:00 PM',
-        allergens: ['Nuts'],
-        photo: null,
-        urgency: 'critical'
-      },
-      {
-        id: 3,
-        business: 'Corner Bakery',
-        type: 'Bakery',
-        items: ['Day-old bread', 'Pastries', 'Sandwiches'],
-        quantity: '30 items',
-        originalPrice: 90,
-        discountedPrice: 18,
-        expiryTime: '4 hours',
-        distance: 0.5,
-        category: 'Baked Goods',
-        pickupTime: 'End of day'
-      }
+      { id: 1, business: 'Green Valley Grocery', type: 'Grocery Store', items: ['Fresh produce mix', 'Bakery items', 'Dairy products'], quantity: '50 lbs', originalPrice: 125, discountedPrice: 25, expiryTime: '2 hours', distance: 0.8, category: 'Mixed', pickupTime: '6:00 PM - 8:00 PM', allergens: ['Dairy', 'Gluten'], photo: null, urgency: 'high' },
+      { id: 2, business: 'Bella Vista Restaurant', type: 'Restaurant', items: ['Prepared meals', 'Fresh salads', 'Soup portions'], quantity: '20 portions', originalPrice: 200, discountedPrice: 40, expiryTime: '1 hour', distance: 1.2, category: 'Prepared Food', pickupTime: '9:00 PM - 10:00 PM', allergens: ['Nuts'], photo: null, urgency: 'critical' },
+      { id: 3, business: 'Corner Bakery', type: 'Bakery', items: ['Day-old bread', 'Pastries', 'Sandwiches'], quantity: '30 items', originalPrice: 90, discountedPrice: 18, expiryTime: '4 hours', distance: 0.5, category: 'Baked Goods', pickupTime: 'End of day' }
     ];
-    
     setAvailableFood(mockFood);
   };
 
@@ -88,15 +72,12 @@ const FoodWasteReduction = () => {
 
   const claimFood = async (foodItem) => {
     const mealsProvided = parseInt(foodItem.quantity);
-    const co2Saved = mealsProvided * 2.5; // kg CO2 per meal
+    const co2Saved = mealsProvided * 2.5;
     const moneySaved = foodItem.originalPrice - foodItem.discountedPrice;
     
     saveImpact(mealsProvided, co2Saved, moneySaved);
-    
-    // Remove from available food
     setAvailableFood(prev => prev.filter(item => item.id !== foodItem.id));
     
-    // Log activity for dashboard
     try {
       const { authManager } = await import('../utils/auth');
       await authManager.logActivity('Food rescue completed', {
@@ -131,7 +112,6 @@ const FoodWasteReduction = () => {
 
   return (
     <div className="container">
-      {/* Header */}
       <FeatureHeader
         icon="🍽️"
         title="Food Rescue Network: Zero Waste"
@@ -139,7 +119,6 @@ const FoodWasteReduction = () => {
         capabilities="🤖 Smart Matching • 📊 Impact Tracking • 🌍 Community Network • ⚡ Real-time Updates"
       />
 
-      {/* Problem Statement */}
       <ProblemSolutionCard
         type="problem"
         title="The Food Waste Crisis"
@@ -152,7 +131,6 @@ const FoodWasteReduction = () => {
         ]}
       />
 
-      {/* Solution */}
       <ProblemSolutionCard
         type="solution"
         title="The Food Rescue Revolution"
@@ -160,7 +138,6 @@ const FoodWasteReduction = () => {
         color="#4CAF50"
       />
 
-      {/* Process Flow */}
       <ProcessFlow
         title="How Food Rescue Works"
         steps={[
@@ -187,7 +164,6 @@ const FoodWasteReduction = () => {
         ]}
       />
 
-      {/* Impact Dashboard */}
       <div className="card" style={{ marginBottom: '30px' }}>
         <h3 style={{ color: '#2E7D32', marginBottom: '20px', textAlign: 'center' }}>
           🌱 Your Food Rescue Impact
@@ -221,7 +197,6 @@ const FoodWasteReduction = () => {
         />
       </div>
 
-      {/* User Type Selection */}
       <div className="card" style={{ marginBottom: '30px' }}>
         <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>👤 I am a...</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
@@ -278,7 +253,6 @@ const FoodWasteReduction = () => {
         </div>
       </div>
 
-      {/* Location Input */}
       <div className="card" style={{ marginBottom: '30px' }}>
         <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>📍 Your Location</h3>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -691,6 +665,85 @@ const FoodWasteReduction = () => {
           </div>
         </div>
       )}
+
+      {/* --- NEW SECTIONS ADDED BELOW --- */}
+      
+      <div className="card" style={{
+        marginTop: '40px',
+        background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+        border: '2px solid #FF9800'
+      }}>
+        <h3 style={{ color: '#F57C00', marginBottom: '15px' }}>🚧 Prototype System Acknowledgement</h3>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '15px' }}>
+          <strong>This is a proof-of-concept demonstration.</strong> The available food listings are based on simulated data to showcase the platform's potential.
+        </p>
+        <div style={{
+          background: 'rgba(255, 152, 0, 0.1)',
+          padding: '15px',
+          borderRadius: '8px',
+          fontSize: '0.95rem'
+        }}>
+          • The data is for demonstration purposes only and does not represent real-time food availability.<br />
+          • This prototype shows the potential of an AI-powered food rescue network.<br />
+          • For real-world food rescue, please consider the established apps recommended below.
+        </div>
+      </div>
+
+      <div style={{ marginTop: '40px', marginBottom: '40px' }}>
+        <h3 style={{ color: '#2E7D32', marginBottom: '20px', textAlign: 'center' }}>
+          📱 Real-World Food Rescue Apps
+        </h3>
+        <div className="grid grid-3">
+          {foodRescueApps.map((app, index) => (
+            <div key={index} className="card" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+              <h4 style={{ color: '#2E7D32', marginBottom: '10px' }}>{app.name}</h4>
+              <div style={{
+                fontSize: '0.8rem',
+                color: '#FF9800',
+                fontWeight: 'bold',
+                marginBottom: '10px'
+              }}>
+                {app.category}
+              </div>
+              <p style={{ fontSize: '0.9rem', marginBottom: '15px', lineHeight: '1.4', flexGrow: 1 }}>
+                {app.description}
+              </p>
+              <div style={{ marginBottom: '15px' }}>
+                <strong style={{ fontSize: '0.8rem' }}>Features:</strong>
+                <ul style={{ fontSize: '0.8rem', textAlign: 'left', marginTop: '5px', paddingLeft: '20px' }}>
+                  {app.features.map((feature, idx) => (
+                    <li key={idx}>{feature}</li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#666' }}>Rating: </span>
+                <span style={{ color: '#FF9800', fontWeight: 'bold' }}>
+                  {'⭐'.repeat(Math.floor(app.rating))} {app.rating}
+                </span>
+              </div>
+              <a
+                href={app.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 16px',
+                  background: '#4CAF50',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: 'bold',
+                  marginTop: 'auto'
+                }}
+              >
+                📲 Get App
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

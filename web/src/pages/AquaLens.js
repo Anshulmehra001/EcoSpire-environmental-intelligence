@@ -19,6 +19,7 @@ function AquaLens() {
   const [dragActive, setDragActive] = useState(false);
   const [testResults, setTestResults] = useState([]);
   const [accuracyTestResults, setAccuracyTestResults] = useState([]);
+  const [uploadedFile, setUploadedFile] = useState(null); 
 
   const imageInputRef = useRef(null);
 
@@ -181,6 +182,7 @@ function AquaLens() {
       if (file.type.startsWith('image/')) {
         const imageUrl = URL.createObjectURL(file);
         setUploadedImage(imageUrl);
+        setUploadedFile(file); 
       } else {
         alert('Please upload an image file (JPG, PNG, etc.)');
       }
@@ -198,6 +200,7 @@ function AquaLens() {
       if (file.type.startsWith('image/')) {
         const imageUrl = URL.createObjectURL(file);
         setUploadedImage(imageUrl);
+        setUploadedFile(file);
       } else {
         alert('Please upload an image file');
       }
@@ -217,163 +220,100 @@ function AquaLens() {
   };
 
   const analyzeWaterQuality = async () => {
-    if (!uploadedImage) return;
+    // This check now uses uploadedFile, which holds the actual file data
+    if (!uploadedFile) {
+      alert("Please upload an image file first.");
+      return;
+    }
 
     setIsAnalyzing(true);
+    setAnalysis(null);
+
+    let analysisResults;
+    let analysisSource = "Backend"; // To track where the data came from
 
     try {
-      console.log('🧪 Starting ML-enhanced water quality analysis...');
-      
-      // Validate inputs
-      if (!uploadedImage) {
-        throw new Error('No image uploaded');
-      }
-      
-      // Use genuine AI analysis system
-      let analysisResults;
-      try {
-        // Convert uploaded image to file object for analysis
-        const imageFile = await fetch(uploadedImage).then(r => r.blob());
-        const file = new File([imageFile], 'water-sample.jpg', { type: 'image/jpeg' });
-        
-        // Use genuine AI analysis
-        analysisResults = await genuineAI.analyzeImage(file, 'water');
-        console.log('✅ Genuine AI analysis completed:', analysisResults);
-      } catch (error) {
-        console.warn('Genuine AI analysis failed, using fallback:', error);
-        analysisResults = await analyzeWaterImage(uploadedImage, selectedWaterSource);
-      }
-      // Add prototype disclaimer
-      analysisResults.prototypeDisclaimer = true;
-      
-      // Apply realistic confidence calculation
-      const imageQuality = {
-        lighting: Math.random() > 0.7 ? 'poor' : Math.random() > 0.3 ? 'good' : 'average',
-        clarity: Math.random() > 0.8 ? 'blurry' : 'sharp',
-        stripVisible: Math.random() > 0.9 ? 'partial' : 'complete'
-      };
-      
-      const calculatedConfidence = calculateConfidence(analysisResults, imageQuality);
-      analysisResults.confidence = calculatedConfidence;
-      
-      // If confidence is very low, clear potentially false bacteria detection
-      if (calculatedConfidence < 30 && analysisResults.bacteria > 0) {
-        console.warn('⚠️ Low confidence bacteria detection cleared due to poor image quality');
-        analysisResults.bacteria = 0; // Clear false positive
-      }
-      
-      console.log('✅ Image analysis completed:', analysisResults);
-
-      // Validate analysis accuracy
-      try {
-        const { accuracyValidator } = await import('../utils/accuracyValidator');
-        const validation = await accuracyValidator.validateWaterQualityAccuracy(analysisResults);
-        console.log('🎯 Analysis accuracy:', validation.accuracy + '%');
-        
-        if (validation.issues && validation.issues.length > 0) {
-          console.warn('⚠️ Analysis issues:', validation.issues);
+        // --- ONLINE PATH: TRY THE REAL BACKEND FIRST ---
+        console.log("Attempting analysis via backend...");
+        const formData = new FormData();
+        formData.append('image', uploadedFile); // Send the actual file
+        formData.append('waterSource', selectedWaterSource);
+        if (userLocation) {
+            formData.append('latitude', userLocation.latitude);
+            formData.append('longitude', userLocation.longitude);
         }
-      } catch (validationError) {
-        console.warn('Validation failed:', validationError.message);
-      }
 
-      // Enhanced ML-powered water quality assessment
-      const qualityAssessment = waterQualityAnalyzer.assessWaterQuality(analysisResults);
-      
-      // Add advanced insights and recommendations
-      const enhancedInsights = {
-        overallSafety: analysisResults.confidence > 80 ? 'Safe' : 
-                      analysisResults.confidence > 60 ? 'Caution' : 'Unsafe',
-        recommendations: generateWaterRecommendations(analysisResults),
-        healthImpact: assessHealthImpact(analysisResults),
-        trendAnalysis: 'Real-time analysis - historical data needed for trends'
-      };
-      
-      // Enhance parameter details
-      if (analysisResults.parameters) {
-        Object.keys(analysisResults.parameters).forEach(param => {
-          const value = analysisResults.parameters[param];
-          if (typeof value === 'object' && value.value !== undefined) {
-            analysisResults.parameters[param] = {
-              ...value,
-              status: getParameterStatus(param, value.value),
-              recommendation: getParameterRecommendation(param, value.value),
-              healthImpact: getParameterHealthImpact(param, value.value)
-            };
-          }
+        const response = await fetch('http://localhost:5000/api/analyze-water', {
+            method: 'POST',
+            body: formData,
         });
-      }
 
-      // Create comprehensive analysis result
-      const analysisResult = {
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Backend error: ${response.status}`);
+        }
+        
+        analysisResults = await response.json();
+        console.log("✅ Backend analysis successful.", analysisResults);
+
+    } catch (error) {
+        // --- OFFLINE FALLBACK PATH ---
+        console.warn("Backend analysis failed:", error.message);
+        console.log("⚡️ Using offline fallback simulation.");
+        analysisSource = "Offline Fallback (Simulation)";
+        
+        // This calls your ORIGINAL frontend simulation logic from your utils
+        analysisResults = await genuineAI.analyzeImage(uploadedFile, 'water');
+    }
+
+    // --- UNIFIED RESULT PROCESSING ---
+    // This part of the code now runs for BOTH online and offline results.
+    // It uses your existing helper functions to build the rich UI object.
+    
+    // First, get the core results object, which might be nested differently
+    const coreResults = analysisResults.results || analysisResults;
+
+    // Use your existing helper to determine overall quality
+    const qualityAssessment = assessWaterQuality(coreResults);
+
+    // Create the final, rich analysis object for the UI
+    const finalAnalysis = {
         id: waterQualityDB.generateId(),
         timestamp: new Date().toISOString(),
         location: userLocation,
         waterSource: selectedWaterSource || 'Unknown',
         results: {
-          ph: parseFloat(analysisResults.ph?.toFixed(1) || 7.0),
-          chlorine: parseFloat(analysisResults.chlorine?.toFixed(1) || 0.0),
-          nitrates: Math.round(analysisResults.nitrates || 0),
-          hardness: Math.round(analysisResults.hardness || 100),
-          alkalinity: Math.round(analysisResults.alkalinity || 80),
-          bacteria: analysisResults.bacteria || 0
+          ph: parseFloat(coreResults.ph?.toFixed(1) || 7.0),
+          chlorine: parseFloat(coreResults.chlorine?.toFixed(1) || 0.0),
+          nitrates: Math.round(coreResults.nitrates || 0),
+          hardness: Math.round(coreResults.hardness || 100),
+          alkalinity: Math.round(coreResults.alkalinity || 80),
+          bacteria: coreResults.bacteria || 0
         },
-        overallQuality: analysisResults.overallQuality,
-        safetyLevel: analysisResults.safetyLevel,
-        alerts: analysisResults.alerts || [],
-        recommendations: analysisResults.recommendations || [],
+        overallQuality: qualityAssessment.quality,
+        safetyLevel: qualityAssessment.safety,
+        alerts: qualityAssessment.alerts,
+        recommendations: qualityAssessment.recommendations,
         confidence: analysisResults.confidence,
         individualConfidences: analysisResults.individualConfidences,
-        individualConfidences: analysisResults.individualConfidences,
+        processingMethod: analysisResults.processingMethod || analysisSource,
+        
         qualityMetrics: analysisResults.qualityMetrics,
         analysisReport: analysisResults.analysisReport,
-        imageProcessingTime: '2.8s',
-        colorAccuracy: analysisResults.colorAccuracy,
-        stripType: 'Multi-parameter test strip',
-        calibrationUsed: 'Advanced ML + Computer Vision',
-        lightingConditions: analysisResults.lightingQuality,
-        colorChannels: analysisResults.colorChannels,
-        processingMethod: analysisResults.processingMethod,
-        regionsDetected: analysisResults.regionsDetected,
-        imageSize: analysisResults.imageSize,
-        calibrationAccuracy: analysisResults.qualityMetrics?.calibrationAccuracy?.score
-      };
+    };
 
-      setAnalysis(analysisResult);
+    setAnalysis(finalAnalysis);
 
-      // Save to IndexedDB database
-      try {
-        await waterQualityDB.saveWaterTest(analysisResult);
-        console.log('✅ Test results saved to database');
-        
-        // Log activity for dashboard
-        const { authManager } = await import('../utils/auth');
-        await authManager.logActivity('Water quality test completed', {
-          waterSource: selectedWaterSource,
-          overallQuality: analysisResult.overallQuality,
-          safetyLevel: analysisResult.safetyLevel,
-          location: userLocation
-        });
-      } catch (dbError) {
-        console.warn('Database save failed, using localStorage fallback:', dbError);
-        // Fallback to localStorage
-        const newResults = [...testResults, analysisResult];
-        setTestResults(newResults);
-        localStorage.setItem('aqua-lens-results', JSON.stringify(newResults));
-      }
-
-      // Update test results state
-      const updatedResults = await waterQualityDB.getAllWaterTests(50);
-      setTestResults(updatedResults);
-
-      console.log('✅ Analysis complete and saved');
-
-    } catch (error) {
-      console.error('❌ Analysis failed:', error);
-      alert(`Analysis failed: ${error.message}. Please ensure good lighting and a clear image of the test strip.`);
-    } finally {
-      setIsAnalyzing(false);
+    // Save to local DB regardless of source
+    try {
+        await waterQualityDB.saveWaterTest(finalAnalysis);
+        const updatedResults = await waterQualityDB.getAllWaterTests(50);
+        setTestResults(updatedResults);
+    } catch (dbError) {
+        console.warn('Database save failed:', dbError);
     }
+    
+    setIsAnalyzing(false);
   };
 
   // Function to validate accuracy of generated test strips
@@ -812,73 +752,23 @@ function AquaLens() {
       {/* Test Strip Generator for Concept Testing */}
       <TestStripTester 
         onTestResult={async (testStrip) => {
-          // Auto-analyze the generated test strip
+          // --- THIS IS THE NEW, SIMPLIFIED LOGIC ---
+
+          // 1. Clear any previous analysis results from the screen
+          setAnalysis(null);
+
+          // 2. Set the image URL to display the new strip
           setUploadedImage(testStrip.dataURL);
-          setIsAnalyzing(true);
+
+          // 3. Convert the generated image into a File object for the analyzer
+          const response = await fetch(testStrip.dataURL);
+          const blob = await response.blob();
+          const file = new File([blob], 'generated-test-strip.jpg', { type: 'image/jpeg' });
           
-          try {
-            // For demonstration: simulate realistic analysis with some variation
-            const simulatedResults = {
-              ph: testStrip.expectedResults.ph + (Math.random() - 0.5) * 0.6,
-              chlorine: Math.max(0, testStrip.expectedResults.chlorine + (Math.random() - 0.5) * 0.8),
-              nitrates: Math.max(0, testStrip.expectedResults.nitrates + (Math.random() - 0.5) * 10),
-              hardness: Math.max(0, testStrip.expectedResults.hardness + (Math.random() - 0.5) * 40),
-              alkalinity: Math.max(0, testStrip.expectedResults.alkalinity + (Math.random() - 0.5) * 30),
-              bacteria: testStrip.expectedResults.bacteria, // Use expected results without random contamination
-              confidence: 70 + Math.random() * 20, // 70-90% confidence
-              processingMethod: 'Prototype Color Analysis'
-            };
-            
-            // Calculate accuracy by comparing with expected results
-            const accuracyValidation = validateTestStripAccuracy(simulatedResults, testStrip.expectedResults);
-            
-            // Store accuracy test result
-            const accuracyTest = {
-              id: Date.now().toString(),
-              timestamp: new Date().toISOString(),
-              expectedResults: testStrip.expectedResults,
-              actualResults: simulatedResults,
-              accuracyValidation: accuracyValidation,
-              testConditions: testStrip.metadata
-            };
-            
-            setAccuracyTestResults(prev => [...prev, accuracyTest]);
-            
-            // Set analysis with accuracy information
-            setAnalysis({
-              results: {
-                ph: Math.round(simulatedResults.ph * 10) / 10,
-                chlorine: Math.round(simulatedResults.chlorine * 10) / 10,
-                nitrates: Math.round(simulatedResults.nitrates),
-                hardness: Math.round(simulatedResults.hardness),
-                alkalinity: Math.round(simulatedResults.alkalinity),
-                bacteria: Math.round(simulatedResults.bacteria * 100) / 100
-              },
-              waterSource: 'Generated Test Strip',
-              timestamp: new Date().toISOString(),
-              confidence: Math.round(simulatedResults.confidence),
-              testType: 'Prototype Demo',
-              generatedTest: true,
-              expectedResults: testStrip.expectedResults,
-              accuracyValidation: accuracyValidation,
-              overallQuality: testStrip.expectedResults.overallQuality,
-              safetyLevel: testStrip.expectedResults.safetyLevel,
-              processingMethod: 'Prototype Color Analysis',
-              prototypeDisclaimer: true
-            });
-            
-            console.log('🎯 Prototype Test Results:', accuracyValidation);
-            
-          } catch (error) {
-            console.error('Prototype test failed:', error);
-            setAnalysis({
-              error: 'Prototype test failed. Please try again.',
-              confidence: 0,
-              results: null
-            });
-          } finally {
-            setIsAnalyzing(false);
-          }
+          // 4. Set the File object in state so the "Analyze" button is ready
+          setUploadedFile(file);
+
+          console.log('✅ Generated Test Strip is ready for analysis. Click "Analyze Water Quality" to proceed.');
         }}
       />
 
@@ -1047,7 +937,7 @@ function AquaLens() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', fontSize: '0.9rem', color: '#666' }}>
               <div><strong>Confidence:</strong> {analysis.confidence}%</div>
-              <div><strong>Method:</strong> {analysis.processingMethod || 'Advanced CV+ML'}</div>
+              <div><strong>Analysis by:</strong> {analysis.processingMethod}</div>
               <div><strong>Regions:</strong> {analysis.regionsDetected}/6</div>
               <div><strong>Quality:</strong> {analysis.qualityMetrics?.lightingQuality?.quality || analysis.lightingQuality}</div>
             </div>

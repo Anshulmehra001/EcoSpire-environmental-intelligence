@@ -271,3 +271,133 @@ MIT License - see LICENSE file for details
 ---
 
 *For frontend-only usage, the system works completely without the backend using the self-contained JavaScript analysis engine.*
+
+
+
+
+
+
+
+
+
+# 🌿 EcoSpire Backend Setup Guide
+
+## Overview
+
+The EcoSpire backend is a high-performance, multi-language system designed to power a suite of environmental intelligence tools. It uses a Node.js coordinator to manage specialized Python and C++ services for maximum accuracy.
+
+## 🏗️ Architecture
+
+-   **Node.js** - Main API server and request coordination.
+-   **Python** - AI-powered analysis for computer vision (AquaLens), audio (BiodiversityEar), and bioinformatics (Bio-Stream AI).
+-   **C++** - High-performance image preprocessing for AquaLens.
+-   **SQLite** - Lightweight and comprehensive data storage.
+-   **NCBI BLAST+** - Scientific engine for DNA sequence analysis.
+
+## 🚀 Quick Setup
+
+### 1. Install Node.js Dependencies
+```bash
+cd web/backend
+npm install
+2. Setup Python Environment
+code
+Bash
+# It is highly recommended to use a virtual environment
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+source venv/bin/activate
+
+# Install all Python dependencies
+pip install -r python/requirements.txt
+3. Install Scientific Toolkit (for Bio-Stream AI)
+The Bio-Stream AI tool requires the NCBI BLAST+ command-line toolkit for its analysis engine.
+Download: Get the installer from the official NCBI BLAST website.
+Install: Run the installer. Crucially, during setup, you must check the box to "Add BLAST to the system PATH". This allows the backend to find and use the tool.
+Verify: After installation, open a new terminal and run makeblastdb -version. You should see a version number printed.
+4. Build Bio-Stream AI Database
+Bio-Stream AI uses a custom DNA database. To build it, run the following commands from the web/backend/ directory:
+code
+Bash
+# Navigate to the database source directory
+cd python/blast_db
+
+# (On Windows) Combine the sample DNA files
+copy *.fasta custom_database.fasta
+# (On Mac/Linux)
+cat *.fasta > custom_database.fasta
+
+# Build the database
+makeblastdb -in "custom_database.fasta" -dbtype nucl -out "biostream_db"
+Note: If makeblastdb fails due to a space in your project path, please use the "temporary folder" method documented in the BioStreamAI-README.md.
+5. Build C++ Components (Optional for AquaLens)
+code
+Bash
+# For detailed instructions, see the "Troubleshooting" section below.
+cd cpp
+make
+6. Initialize Database
+This creates the water_quality.db file for AquaLens data.
+code
+Bash
+npm run init-db
+7. Start the Server
+code
+Bash
+# For development with live reloading
+npm run dev
+
+# For production
+npm start```
+
+## 📋 Dependencies
+
+### Node.js Packages
+-   `express` - Web server framework
+-   `multer` - File upload handling
+-   `sqlite3` - Database interface
+-   `sharp` - Image processing
+-   `cors` - Cross-origin requests
+-   `uuid` - Unique ID generation
+
+### Python Packages
+-   `opencv-python` - Computer vision
+-   `Pillow` - Image processing
+-   `numpy` - Numerical computing
+-   `scipy` - Scientific computing
+-   `scikit-image` - Image analysis
+-   `librosa` - Audio analysis
+-   `biopython` - Toolkit for bioinformatics
+
+### C++ Dependencies
+-   `OpenCV 4.x` - Computer vision library
+-   `g++` / `make` - Build tools
+
+## 🔧 Configuration
+
+Create a `.env` file in the `web/backend` directory:
+```env
+PORT=5000
+NODE_ENV=development
+DATABASE_PATH=./database/water_quality.db
+UPLOAD_DIR=./uploads
+TEMP_DIR=./temp
+📡 API Endpoints
+POST /api/analyze-water
+Tool: AquaLens
+Body: FormData with image file
+Response: Water quality analysis results
+POST /api/analyze-audio
+Tool: BiodiversityEar
+Body: FormData with audioFile
+Response: Acoustic biodiversity analysis report
+POST /api/analyze-dna
+Tool: Bio-Stream AI
+Body: FormData with dnaFile
+Response: A full ecosystem health and species identification report.
+GET /api/water-map
+Tool: AquaLens
+Query: lat, lng, radius
+Response: Array of water quality data points for mapping
