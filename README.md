@@ -80,6 +80,42 @@ EcoSpire is a comprehensive environmental intelligence platform featuring **17 A
 - **Step-by-step transformation** guides
 - **Environmental impact calculations**
 
+### ♻️ **EWasteRecycling** - Electronic Waste Management
+- **Device valuation** and recycling optimization
+- **Material recovery** calculations
+- **Recycling center** locator and recommendations
+- **Environmental impact** tracking
+
+### 🌬️ **AirQuality** - Real-Time Pollution Monitoring
+- **Global air quality** tracking for 200+ cities
+- **Pollution source** analysis and health recommendations
+- **Real-time AQI** monitoring and forecasting
+- **Health impact** assessment and alerts
+
+### ⚖️ **EnvironmentalJustice** - Equity & Impact Analysis
+- **Environmental inequality** analysis and visualization
+- **Community impact** assessment and mapping
+- **Environmental burden** tracking by demographics
+- **Advocacy resources** and policy recommendations
+
+### 🍎 **FoodWasteReduction** - Food Rescue Network
+- **Food waste tracking** and reduction strategies
+- **Food rescue network** connections and coordination
+- **Donation matching** system and logistics
+- **Impact measurement** and community engagement
+
+### 📦 **PackagingDesigner** - Sustainable Packaging Solutions
+- **AI-powered sustainable** packaging design
+- **Biomaterial recommendations** and analysis
+- **Cost-benefit analysis** and optimization
+- **Environmental impact** assessment and certification
+
+### 🌾 **SmartFarming** - Agricultural Intelligence Hub
+- **AI-powered agricultural** insights and recommendations
+- **Real-time environmental** monitoring for farming
+- **Crop optimization** strategies and techniques
+- **Sustainability practice** guidance and tracking
+
 ## 🛠️ Technical Architecture
 
 ### Frontend Stack
@@ -127,8 +163,8 @@ EcoSpire is a comprehensive environmental intelligence platform featuring **17 A
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/ecospire.git
-cd ecospire
+git clone https://github.com/Anshulmehra001/EcoSpire-environmental-intelligence.git
+cd EcoSpire-environmental-intelligence
 ```
 
 2. **Install frontend dependencies**
@@ -215,7 +251,7 @@ Navigate to `http://localhost:3000`
 
 ### Development Metrics
 - **50+ React Components** - Modular, reusable architecture
-- **18 Environmental Tools** - Comprehensive feature set
+- **17 Environmental Tools** - Comprehensive feature set
 - **15,000+ Lines of Code** - Professional implementation
 - **95%+ Test Coverage** - Reliable, production-ready
 
@@ -229,10 +265,10 @@ Navigate to `http://localhost:3000`
 
 ### Project Structure
 ```
-ecospire/
+EcoSpire-environmental-intelligence/
 ├── web/                          # Frontend application
 │   ├── src/
-│   │   ├── pages/               # Feature pages (18 tools)
+│   │   ├── pages/               # Feature pages (17 tools)
 │   │   ├── components/          # Reusable UI components
 │   │   ├── utils/               # AI processing utilities
 │   │   └── styles/              # CSS and styling
@@ -364,11 +400,12 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - **Documentation**: Check this README and inline comments
 - **Issues**: Report bugs on GitHub Issues
 - **Discussions**: Join GitHub Discussions for questions
-- **Email**: aniketmehra715@gmail.com for direct support
+- **Email**: Contact through GitHub for direct support
 
 ### Community
 - **GitHub**: https://github.com/Anshulmehra001/EcoSpire-environmental-intelligence
-- **Discord**: https://discord.gg/eX6sSmPW
+- **Issues**: Report bugs and request features on GitHub Issues
+- **Discussions**: Join GitHub Discussions for community support
 
 
 ---
