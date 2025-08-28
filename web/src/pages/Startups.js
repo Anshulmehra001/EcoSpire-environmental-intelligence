@@ -337,87 +337,133 @@ function Startups() {
           <div 
             key={index} 
             className="card" 
-            style={{ cursor: 'pointer', transition: 'transform 0.3s ease' }}
+            style={{ 
+              cursor: 'pointer', 
+              transition: 'transform 0.3s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%'
+            }}
             onClick={() => setSelectedStartup(startup)}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
             onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
           >
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-              <div style={{ fontSize: '3rem', marginRight: '15px' }}>
+            {/* Header Section - Fixed Height */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '15px', minHeight: '80px' }}>
+              <div style={{ fontSize: '3rem', marginRight: '15px', lineHeight: '1' }}>
                 {getCategoryIcon(startup.category)}
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 8px 0', color: '#2E7D32', fontSize: '1.4rem' }}>
+                <h3 style={{ margin: '0 0 8px 0', color: '#2E7D32', fontSize: '1.4rem', lineHeight: '1.2' }}>
                   {startup.name}
                 </h3>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap' }}>
                   <span style={{
-                    fontSize: '0.8rem',
-                    padding: '3px 10px',
+                    fontSize: '0.75rem',
+                    padding: '3px 8px',
                     borderRadius: '12px',
                     background: '#2E7D32',
                     color: 'white',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
                   }}>
                     {startup.category}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: '#666', display: 'flex', alignItems: 'center' }}>
-                    <MapPin size={12} style={{ marginRight: '4px' }} />
+                  <span style={{ fontSize: '0.75rem', color: '#666', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    <MapPin size={12} style={{ marginRight: '3px' }} />
                     {startup.location}
                   </span>
-                  <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#666', whiteSpace: 'nowrap' }}>
                     Founded {startup.founded}
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ fontSize: '0.9rem', color: '#2E7D32', fontWeight: 'bold' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '0.85rem', color: '#2E7D32', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     💰 {startup.valuation}
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: '#FF9800' }}>
+                  <div style={{ fontSize: '0.75rem', color: '#FF9800', whiteSpace: 'nowrap' }}>
                     {startup.funding}
                   </div>
                 </div>
               </div>
             </div>
 
-            <p style={{ color: '#666', marginBottom: '15px', lineHeight: '1.6', fontSize: '0.95rem' }}>
-              {startup.description}
-            </p>
+            {/* Description Section - Fixed Height */}
+            <div style={{ marginBottom: '15px', minHeight: '60px' }}>
+              <p style={{ 
+                color: '#666', 
+                lineHeight: '1.5', 
+                fontSize: '0.9rem',
+                margin: 0,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
+                {startup.description}
+              </p>
+            </div>
 
+            {/* Environmental Impact Section - Fixed Height */}
             <div style={{ 
               background: '#e8f5e8', 
               padding: '12px', 
               borderRadius: '8px', 
               marginBottom: '15px',
-              borderLeft: '3px solid #2E7D32'
+              borderLeft: '3px solid #2E7D32',
+              minHeight: '70px'
             }}>
-              <div style={{ fontSize: '0.8rem', color: '#2E7D32', fontWeight: 'bold', marginBottom: '5px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#2E7D32', fontWeight: 'bold', marginBottom: '5px' }}>
                 🌍 Environmental Impact
               </div>
-              <div style={{ fontSize: '0.9rem', color: '#555' }}>{startup.impact}</div>
+              <div style={{ 
+                fontSize: '0.85rem', 
+                color: '#555',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: '1.3'
+              }}>
+                {startup.impact}
+              </div>
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
-              <div style={{ fontSize: '0.8rem', color: '#1976d2', fontWeight: 'bold', marginBottom: '8px' }}>
+            {/* Technology Section - Fixed Height */}
+            <div style={{ marginBottom: '15px', minHeight: '60px' }}>
+              <div style={{ fontSize: '0.75rem', color: '#1976d2', fontWeight: 'bold', marginBottom: '6px' }}>
                 🔬 Technology Focus
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#666', lineHeight: '1.4' }}>
-                {startup.technology.substring(0, 120)}...
+              <div style={{ 
+                fontSize: '0.8rem', 
+                color: '#666', 
+                lineHeight: '1.3',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
+                {startup.technology}
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button className="btn btn-primary" style={{ fontSize: '0.9rem' }}>
+            {/* Spacer to push footer to bottom */}
+            <div style={{ flex: 1 }}></div>
+
+            {/* Footer Section - Always at bottom */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+              <button className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '8px 16px' }}>
                 📊 View Details
               </button>
-              <div style={{ display: 'flex', gap: '5px' }}>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', maxWidth: '150px' }}>
                 {startup.customers.slice(0, 3).map((customer, idx) => (
                   <span key={idx} style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.65rem',
                     padding: '2px 6px',
                     background: '#e3f2fd',
                     color: '#1976d2',
-                    borderRadius: '10px'
+                    borderRadius: '8px',
+                    whiteSpace: 'nowrap'
                   }}>
                     {customer}
                   </span>

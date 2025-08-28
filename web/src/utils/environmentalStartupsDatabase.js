@@ -45,24 +45,205 @@ export const environmentalStartupsDatabase = {
       founded: 2016,
       location: "Stockholm, Sweden",
       category: "Battery Technology",
-      description: "European battery manufacturer focused on sustainable production",
+      description: "European battery manufacturer focused on sustainable production and recycling",
       funding: "$2.75B Series E (2021)",
       valuation: "$12B",
-      technology: "Lithium-ion batteries with 50% recycled materials",
-      impact: "150 GWh annual capacity by 2030, 50% lower carbon footprint",
-      customers: ["BMW", "Volvo", "Polestar", "Fluence"],
+      technology: "Lithium-ion batteries with 50% recycled materials and renewable energy production",
+      impact: "150 GWh annual capacity by 2030, 95% battery recycling rate",
+      customers: ["BMW", "Volvo", "Polestar", "Scania", "Fluence"],
       milestones: [
-        "2021: First battery cell produced in Europe",
-        "2020: $14B in customer orders secured",
-        "2022: Opened recycling facility"
+        "2023: Started production at Northvolt Ett gigafactory",
+        "2022: Opened battery recycling facility",
+        "2021: Secured $55B in orders from automakers",
+        "2020: Achieved breakthrough in sodium-ion technology"
       ],
-      challenges: ["Asian competition", "Raw material supply", "Manufacturing scale-up"],
-      opportunities: ["EU battery regulations", "EV market growth", "Energy storage demand"]
+      challenges: ["Competition from Asian manufacturers", "Raw material supply chains", "Scaling production"],
+      opportunities: ["European EV market growth", "Energy storage demand", "Circular economy regulations"]
+    },
+    {
+      name: "Twelve",
+      founded: 2015,
+      location: "Berkeley, CA, USA",
+      category: "Carbon Utilization",
+      description: "Transforms CO₂ into essential chemicals and fuels using renewable electricity",
+      funding: "$645M Series C (2023)",
+      valuation: "$1.2B",
+      technology: "Proprietary E-Jet process converts CO₂ and water into sustainable aviation fuel",
+      impact: "Could reduce aviation emissions by 90% with sustainable fuel production",
+      customers: ["Alaska Airlines", "Mercedes-Benz", "U.S. Air Force", "Procter & Gamble"],
+      milestones: [
+        "2023: Broke ground on first commercial plant in Washington",
+        "2022: Signed $1B+ agreements for sustainable aviation fuel",
+        "2021: Demonstrated jet fuel production at scale",
+        "2020: Partnership with Mercedes for CO₂-neutral car parts"
+      ],
+      challenges: ["High capital requirements", "Competing with fossil fuels", "Regulatory approval"],
+      opportunities: ["Aviation decarbonization mandates", "Corporate sustainability goals", "Carbon pricing"]
+    },
+    {
+      name: "Form Energy",
+      founded: 2017,
+      location: "Somerville, MA, USA",
+      category: "Energy Storage",
+      description: "Developing iron-air batteries for 100-hour grid-scale energy storage",
+      funding: "$450M Series E (2022)",
+      valuation: "$2.6B",
+      technology: "Iron-air battery technology providing multi-day energy storage at 1/10th cost of lithium",
+      impact: "Could enable 100% renewable grids with seasonal storage capability",
+      customers: ["Great River Energy", "Georgia Power", "Xcel Energy"],
+      milestones: [
+        "2023: Started construction of first commercial facility",
+        "2022: Demonstrated 100-hour discharge capability",
+        "2021: Revealed iron-air battery breakthrough",
+        "2024: Planning 85 MW/8,500 MWh project in Minnesota"
+      ],
+      challenges: ["Unproven at commercial scale", "Manufacturing complexity", "Market education"],
+      opportunities: ["Grid modernization needs", "Renewable energy integration", "Utility cost pressures"]
+    },
+    {
+      name: "Solugen",
+      founded: 2016,
+      location: "Houston, TX, USA",
+      category: "Green Chemistry",
+      description: "Bio-based chemical production using engineered enzymes and metal catalysts",
+      funding: "$357M Series C (2022)",
+      valuation: "$1.8B",
+      technology: "Bioforge platform converts plant sugars into chemicals traditionally made from petroleum",
+      impact: "90% reduction in carbon emissions vs traditional chemical production",
+      customers: ["Unilever", "Olin Corporation", "Stepan Company", "Parchem"],
+      milestones: [
+        "2023: Opened second Bioforge facility in Minnesota",
+        "2022: Achieved $50M annual revenue run rate",
+        "2021: Launched hydrogen peroxide production",
+        "2020: First commercial Bioforge facility operational"
+      ],
+      challenges: ["Scaling biotechnology", "Cost competitiveness", "Customer adoption"],
+      opportunities: ["Chemical industry decarbonization", "Supply chain localization", "Regulatory support"]
+    },
+    {
+      name: "Redwood Materials",
+      founded: 2017,
+      location: "Carson City, NV, USA",
+      category: "Battery Recycling",
+      description: "Recycling lithium-ion batteries and producing sustainable battery materials",
+      funding: "$792M Series C (2022)",
+      valuation: "$3.7B",
+      technology: "Hydrometallurgical and pyrometallurgical processes recovering 95%+ of battery materials",
+      impact: "Could supply materials for 1M+ EVs annually by 2025",
+      customers: ["Tesla", "Panasonic", "Amazon", "Ford"],
+      milestones: [
+        "2023: Started cathode production for EV batteries",
+        "2022: Announced $3.5B Nevada expansion",
+        "2021: Processed 20 GWh of battery materials",
+        "2020: Achieved 95% material recovery rate"
+      ],
+      challenges: ["Battery collection logistics", "Technology scaling", "Market volatility"],
+      opportunities: ["EV adoption growth", "Battery waste regulations", "Supply chain security"]
     }
   ],
 
   // Clean Energy Startups
   cleanEnergy: [
+    {
+      name: "Helion Energy",
+      founded: 2013,
+      location: "Everett, WA, USA",
+      category: "Fusion Energy",
+      description: "Developing fusion power through pulsed non-ignition fusion technology",
+      funding: "$500M Series A (2021)",
+      valuation: "$3B",
+      technology: "Polaris fusion generator using deuterium-helium-3 fuel cycle",
+      impact: "Could provide 50 MW of clean electricity by 2028",
+      customers: ["Microsoft (2028 power purchase agreement)"],
+      milestones: [
+        "2023: Signed first commercial fusion power agreement with Microsoft",
+        "2022: Demonstrated 100 million degree plasma temperature",
+        "2021: Completed 7th generation fusion prototype",
+        "2020: Achieved break-even energy production"
+      ],
+      challenges: ["Technical complexity", "Helium-3 fuel availability", "Regulatory framework"],
+      opportunities: ["Corporate clean energy demand", "Grid decarbonization", "Industrial applications"]
+    },
+    {
+      name: "Heliogen",
+      founded: 2013,
+      location: "Pasadena, CA, USA",
+      category: "Concentrated Solar",
+      description: "AI-powered concentrated solar technology for industrial heat and hydrogen production",
+      funding: "$108M Series B (2021)",
+      valuation: "$2B (via SPAC)",
+      technology: "AI-controlled mirrors concentrate sunlight to achieve 1000°C+ temperatures",
+      impact: "Could replace fossil fuels in cement, steel, and chemical production",
+      customers: ["Rio Tinto", "Bloom Energy", "Woodside Energy"],
+      milestones: [
+        "2023: Launched commercial operations in California",
+        "2022: Demonstrated green hydrogen production",
+        "2021: Went public via SPAC merger",
+        "2019: Achieved breakthrough 1000°C+ solar temperatures"
+      ],
+      challenges: ["Intermittency issues", "High capital costs", "Industrial customer adoption"],
+      opportunities: ["Industrial decarbonization", "Green hydrogen demand", "Carbon pricing"]
+    },
+    {
+      name: "Commonwealth Fusion Systems",
+      founded: 2018,
+      location: "Cambridge, MA, USA",
+      category: "Fusion Energy",
+      description: "Developing commercial fusion power using high-temperature superconductors",
+      funding: "$1.8B Series B (2021)",
+      valuation: "$1.8B",
+      technology: "SPARC tokamak reactor with REBCO superconducting magnets",
+      impact: "Could provide unlimited clean energy by 2030s",
+      customers: ["Utility companies", "Industrial energy users"],
+      milestones: [
+        "2021: Demonstrated world-record magnetic field strength",
+        "2020: Raised largest private fusion funding round",
+        "2025: SPARC demonstration reactor planned",
+        "2030: Commercial ARC reactor targeted"
+      ],
+      challenges: ["Technical complexity", "Regulatory approval", "Competition from renewables"],
+      opportunities: ["Baseload clean energy", "Industrial heat applications", "Grid stability"]
+    },
+    {
+      name: "Energy Vault",
+      founded: 2017,
+      location: "Westlake Village, CA, USA",
+      category: "Energy Storage",
+      description: "Gravity-based energy storage systems for renewable energy integration",
+      funding: "$235M Series C (2021)",
+      valuation: "$1.6B",
+      technology: "Mechanical energy storage using gravity and kinetic energy with 80-90% efficiency",
+      impact: "Could provide cost-effective grid-scale storage for renewable energy",
+      customers: ["DG Fuels", "Saudi Aramco", "China Tianying"],
+      milestones: [
+        "2023: Commissioned first commercial EVx system in China",
+        "2022: Went public via SPAC merger",
+        "2021: Demonstrated 5 MW commercial system",
+        "2020: Signed agreements for 1.6 GWh of projects"
+      ],
+      challenges: ["Proving commercial viability", "Competition from batteries", "Site requirements"],
+      opportunities: ["Grid modernization", "Renewable energy growth", "Emerging markets"]
+    },
+    {
+      name: "Sunfire",
+      founded: 2010,
+      location: "Dresden, Germany",
+      category: "Green Hydrogen",
+      description: "Industrial-scale electrolysis systems for green hydrogen and e-fuel production",
+      funding: "$215M Series C (2022)",
+      valuation: "$1.3B",
+      technology: "High-temperature solid oxide electrolysis (SOEC) with 90%+ efficiency",
+      impact: "Could produce 500,000 tons of green hydrogen annually by 2030",
+      customers: ["Neste", "Total", "Salzgitter AG", "Ørsted"],
+      milestones: [
+        "2023: Started construction of 500 MW electrolyzer factory",
+        "2022: Demonstrated industrial-scale e-fuel production",
+        "2021: Achieved world-record electrolyzer efficiency",
+        "2020: Completed first commercial power-to-liquid plant"
+      ],
+      challenges: ["High capital costs", "Green electricity availability", "Market development"],
+      opportunities: ["Industrial decarbonization", "Aviation fuel mandates", "Steel production"]
+    },
     {
       name: "Form Energy",
       founded: 2017,
@@ -147,6 +328,86 @@ export const environmentalStartupsDatabase = {
 
   // AgTech and Food Startups
   agTech: [
+    {
+      name: "Plenty",
+      founded: 2014,
+      location: "South San Francisco, CA, USA",
+      category: "Vertical Farming",
+      description: "Indoor vertical farms using AI and robotics for sustainable agriculture",
+      funding: "$541M Series E (2021)",
+      valuation: "$2.8B",
+      technology: "LED-lit vertical towers with AI-optimized growing conditions using 95% less water",
+      impact: "365-day growing season with 350x higher yields per square foot than traditional farming",
+      customers: ["Albertsons", "Whole Foods", "Good Eggs", "Walmart"],
+      milestones: [
+        "2023: Opened 95,000 sq ft farm in Compton, California",
+        "2022: Launched leafy greens in 400+ stores",
+        "2021: Raised largest indoor farming funding round",
+        "2020: Achieved commercial profitability on select crops"
+      ],
+      challenges: ["High energy costs", "Limited crop variety", "Capital intensity"],
+      opportunities: ["Urban food security", "Climate resilience", "Water scarcity solutions"]
+    },
+    {
+      name: "Indigo Agriculture",
+      founded: 2014,
+      location: "Boston, MA, USA",
+      category: "Crop Science",
+      description: "Microbial seed treatments and carbon farming marketplace",
+      funding: "$650M Series F (2019)",
+      valuation: "$3.5B",
+      technology: "Beneficial microbes that improve crop yields and soil carbon sequestration",
+      impact: "Could sequester 1 trillion tons of CO2 while improving crop yields by 10-20%",
+      customers: ["10,000+ farmers across 6 million acres", "Bayer", "ADM"],
+      milestones: [
+        "2023: Launched carbon credit marketplace with 5M+ acres enrolled",
+        "2022: Demonstrated 15% average yield increase",
+        "2021: Expanded to 6 countries and 40+ crops",
+        "2020: Achieved $100M+ revenue run rate"
+      ],
+      challenges: ["Regulatory approval", "Farmer adoption", "Carbon measurement"],
+      opportunities: ["Carbon credit markets", "Sustainable agriculture demand", "Climate adaptation"]
+    },
+    {
+      name: "Memphis Meats (UPSIDE Foods)",
+      founded: 2015,
+      location: "Berkeley, CA, USA",
+      category: "Cultivated Meat",
+      description: "Lab-grown meat production without animal slaughter",
+      funding: "$400M Series C (2022)",
+      valuation: "$1.2B",
+      technology: "Cell cultivation technology producing real meat from animal cells",
+      impact: "Could reduce livestock emissions by 96% and land use by 99%",
+      customers: ["Pending FDA approval for commercial sales"],
+      milestones: [
+        "2022: Received FDA approval for cultivated chicken",
+        "2021: Opened 53,000 sq ft production facility",
+        "2020: Reduced production costs by 1000x since founding",
+        "2016: Produced first lab-grown meatball"
+      ],
+      challenges: ["Production scaling", "Cost reduction", "Consumer acceptance"],
+      opportunities: ["Meat industry disruption", "Environmental regulations", "Food security"]
+    },
+    {
+      name: "Pivot Bio",
+      founded: 2010,
+      location: "Berkeley, CA, USA",
+      category: "Nitrogen Fixation",
+      description: "Engineered microbes that produce nitrogen fertilizer on plant roots",
+      funding: "$430M Series D (2022)",
+      valuation: "$2B",
+      technology: "Genetically engineered bacteria that fix atmospheric nitrogen for corn and wheat",
+      impact: "Could replace synthetic fertilizers, reducing 2% of global greenhouse gas emissions",
+      customers: ["15,000+ farmers across 5 million acres in US"],
+      milestones: [
+        "2023: Launched wheat nitrogen-fixing product",
+        "2022: Achieved $100M+ revenue milestone",
+        "2021: Expanded to 4 million acres of corn",
+        "2019: First commercial nitrogen-fixing product launch"
+      ],
+      challenges: ["Regulatory approval", "Farmer education", "Seasonal revenue"],
+      opportunities: ["Fertilizer cost reduction", "Environmental regulations", "Soil health focus"]
+    },
     {
       name: "Impossible Foods",
       founded: 2011,
@@ -367,7 +628,12 @@ export const environmentalMarketData = {
         electricVehicles: "$170 billion",
         hydrogenTech: "$11 billion",
         carbonCapture: "$6.4 billion",
-        climateTech: "$70 billion"
+        climateTech: "$70 billion",
+        sustainableAgriculture: "$15.2 billion",
+        greenBuilding: "$85 billion",
+        waterTechnology: "$22 billion",
+        wasteManagement: "$18 billion",
+        biodiversityTech: "$3.8 billion"
       },
       regions: {
         china: "$546 billion",

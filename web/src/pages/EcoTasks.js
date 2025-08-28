@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function EcoTasks() {
+function EcoTasks({ onActivityComplete }) {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [userPoints, setUserPoints] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -101,7 +101,7 @@ function EcoTasks() {
     setUserLevel(level);
   }, [userPoints]);
 
-  const completeTask = (taskId) => {
+  const completeTask = async (taskId) => {
     if (!completedTasks.includes(taskId)) {
       const newCompleted = [...completedTasks, taskId];
       setCompletedTasks(newCompleted);
@@ -109,6 +109,67 @@ function EcoTasks() {
       
       const task = ecoTasks.find(t => t.id === taskId);
       setUserPoints(prev => prev + task.points);
+
+      // Log activity for environmental impact tracking
+      try {
+        const { authManager } = await import('../utils/auth');
+        
+        // Determine activity type based on task category and impact
+        let activityType = 'general';
+        let amount = 1;
+        
+        // Check for tree planting specifically
+        if (task.title.toLowerCase().includes('tree') || task.title.toLowerCase().includes('plant')) {
+          activityType = 'tree_planted';
+          // Extract number of trees from title or default to number in task
+          const treeMatch = task.title.match(/(\d+)/);
+          amount = treeMatch ? parseInt(treeMatch[1]) : (task.title.includes('Plant Native Trees') ? 3 : 1);
+          console.log('🌳 Tree planting task detected:', task.title, 'Amount:', amount, 'Type:', activityType);
+        } else if (task.category === 'Energy' || task.impact.includes('CO2') || task.impact.includes('carbon')) {
+          activityType = 'carbon_reduction';
+          // Extract CO2 savings from impact text if available
+          const co2Match = task.impact.match(/(\d+(?:,\d+)*)\s*(?:lbs?|kg)\s*CO2/i);
+          amount = co2Match ? parseInt(co2Match[1].replace(',', '')) / 2.2 : 5; // Convert lbs to kg, default 5kg
+        } else if (task.category === 'Water' || task.impact.includes('water') || task.impact.includes('gallons')) {
+          activityType = 'water_test'; // Use water_test for water-related activities
+          const waterMatch = task.impact.match(/(\d+(?:,\d+)*)\s*gallons/i);
+          amount = waterMatch ? Math.ceil(parseInt(waterMatch[1].replace(',', '')) / 1000) : 1; // Convert to water tests equivalent
+        } else if (task.category === 'Waste' || task.impact.includes('waste') || task.impact.includes('recycle')) {
+          activityType = 'waste_reduction';
+          const wasteMatch = task.impact.match(/(\d+(?:,\d+)*)\s*(?:lbs?|kg)/i);
+          amount = wasteMatch ? parseInt(wasteMatch[1].replace(',', '')) / 2.2 : 2; // Convert lbs to kg, default 2kg
+        } else if (task.category === 'Nature' || task.impact.includes('species') || task.impact.includes('biodiversity')) {
+          activityType = 'biodiversity_scan';
+          amount = 1; // Each nature task counts as one biodiversity scan
+        }
+
+        await authManager.logActivity(`EcoTask completed: ${task.title}`, {
+          type: activityType,
+          taskCategory: task.category,
+          taskDifficulty: task.difficulty,
+          taskTitle: task.title,
+          points: task.points,
+          amount: amount
+        });
+        
+        console.log('✅ EcoTask completion logged successfully:', task.title);
+        console.log('📊 Activity details:', { type: activityType, amount, points: task.points });
+        
+        // Notify parent component to refresh stats
+        if (onActivityComplete) {
+          console.log('🔄 Calling onActivityComplete callback...');
+          onActivityComplete({
+            type: activityType,
+            amount: amount,
+            points: task.points,
+            description: `EcoTask completed: ${task.title}`
+          });
+        } else {
+          console.warn('⚠️ onActivityComplete callback not provided');
+        }
+      } catch (error) {
+        console.warn('Failed to log EcoTask completion:', error);
+      }
     }
   };
 
@@ -179,6 +240,7 @@ const checkAchievementUnlocked = (achievement) => {
         }}>
           🏆 Level {userLevel} • 🌟 {userPoints} Points • 🎯 {completedTasks.length} Tasks Completed
         </div>
+
       </div>
 
       {/* User Progress */}
@@ -247,13 +309,22 @@ const checkAchievementUnlocked = (achievement) => {
       </div>
 
       {/* Tasks Grid */}
-      <div className="grid grid-2" style={{ marginBottom: '40px' }}>
+      <div className="grid grid-3" style={{ 
+        marginBottom: '40px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '20px',
+        alignItems: 'stretch'
+      }}>
         {filteredTasks.map(task => {
           const isCompleted = completedTasks.includes(task.id);
           return (
             <div key={task.id} className="card" style={{ 
               opacity: isCompleted ? 0.7 : 1,
-              border: isCompleted ? '2px solid #4CAF50' : '1px solid #ddd'
+              border: isCompleted ? '2px solid #4CAF50' : '1px solid #ddd',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                 <div style={{ fontSize: '2.5rem', marginRight: '15px' }}>{task.icon}</div>
@@ -303,6 +374,8 @@ const checkAchievementUnlocked = (achievement) => {
               <div style={{ marginBottom: '15px', fontSize: '0.8rem', color: '#666' }}>
                 <strong>Verification:</strong> {task.verification}
               </div>
+
+              <div style={{ flex: 1 }}></div>
 
               <button
                 onClick={() => completeTask(task.id)}

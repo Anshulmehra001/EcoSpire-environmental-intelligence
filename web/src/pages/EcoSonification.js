@@ -78,6 +78,24 @@ const EcoSonification = () => {
     const newIsPlaying = !isPlaying;
     audioEngine.current.togglePlayback(newIsPlaying);
     setIsPlaying(newIsPlaying);
+
+    // Log activity when user starts playing environmental soundscape
+    if (newIsPlaying) {
+      try {
+        const { authManager } = await import('../utils/auth');
+        await authManager.logActivity('Environmental soundscape generated', {
+          type: 'general',
+          ecosystemHealth: Math.round(overallHealth),
+          co2Level: params.co2,
+          forestHealth: params.forest,
+          biodiversityLevel: params.biodiversity,
+          points: 10
+        });
+        console.log('✅ EcoSonification activity logged successfully');
+      } catch (error) {
+        console.warn('Failed to log EcoSonification activity:', error);
+      }
+    }
   };
   
   const handleSliderChange = (param, value) => {

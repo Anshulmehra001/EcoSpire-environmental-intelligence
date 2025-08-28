@@ -2,10 +2,11 @@
 
 ## Prerequisites
 - **Node.js 16+** and npm
+- **Python 3.8+** with pip (for backend features)
 - **Modern web browser** (Chrome, Firefox, Safari, Edge)
 - **Git** for cloning the repository
 
-## Quick Installation
+## 🎯 Quick Installation (Frontend Only)
 
 ### 1. Clone Repository
 ```bash
@@ -27,35 +28,94 @@ npm start
 ### 4. Open Browser
 Navigate to `http://localhost:3000`
 
-## Verification Checklist
+## 🔧 Full Installation (Frontend + Backend)
 
-### ✅ Frontend Verification
-- [ ] Dashboard loads with environmental data
-- [ ] All 18 tools are accessible from navigation
-- [ ] BioStreamAI can upload files from `sample_data/`
-- [ ] EcoSonification plays audio
-- [ ] UpcyclingAgent shows project ideas
-- [ ] Responsive design works on mobile
-
-### ✅ Backend Verification (Optional)
+### Frontend Setup
 ```bash
+# 1. Clone and install frontend
+git clone [your-repository-url]
+cd ecospire/web
+npm install
+
+# 2. Start frontend (Terminal 1)
+npm start
+# Frontend runs on http://localhost:3000
+```
+
+### Backend Setup
+```bash
+# 3. Install backend dependencies (Terminal 2)
 cd web/backend
 npm install
-node server.js
+
+# 4. Setup Python environment (recommended)
+python -m venv venv
+
+# Activate virtual environment:
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# 5. Install Python dependencies
+pip install -r python/requirements.txt
+
+# 6. Initialize database
+npm run init-db
+
+# 7. Start backend server
+npm start
+# Backend runs on http://localhost:5000
 ```
-- [ ] Server starts on port 5000
-- [ ] BioStreamAI backend integration works
-- [ ] PhantomFootprint URL analysis works
-- [ ] EWasteRecycling device analysis works
+
+### Backend Features Enabled
+- **🧬 BioStreamAI**: Real DNA sequence analysis with FASTA files
+- **👻 PhantomFootprint**: Product URL environmental impact analysis
+- **♻️ EWasteRecycling**: Electronic device valuation and recycling
+- **💧 AquaLens**: Enhanced water quality analysis with Python AI
+- **🎧 BiodiversityEar**: Advanced audio processing for species identification
+
+## 🧪 Testing Your Installation
+
+### ✅ Frontend Verification
+- [ ] Dashboard loads with environmental data and global stats
+- [ ] All 17 tools are accessible from navigation menu
+- [ ] EcoSonification plays environmental soundscapes
+- [ ] UpcyclingAgent shows 50+ project ideas
+- [ ] EcoTasks displays environmental challenges
+- [ ] Community features work (posting, liking, commenting)
+
+### ✅ Backend Verification (If Installed)
+```bash
+# Test backend health
+curl http://localhost:5000/api/health
+# Should return: {"status":"healthy","service":"EcoSpire Environmental Analysis API"}
+```
+
+**Backend Integration Tests:**
+- [ ] **BioStreamAI**: Upload DNA files from `sample_data/` folder
+- [ ] **PhantomFootprint**: Analyze product URLs (try Amazon/eBay links)
+- [ ] **EWasteRecycling**: Get device valuations for phones/laptops
+- [ ] **AquaLens**: Enhanced water analysis with Python processing
+- [ ] **BiodiversityEar**: Advanced audio species identification
 
 ### ✅ Sample Data Testing
 ```bash
-# Test with provided sample files
+# Test with provided sample files in sample_data/
 sample_data/
-├── e_coli.fasta          # Upload to BioStreamAI
-├── salmo_trutta.fasta    # Upload to BioStreamAI  
-└── custom_database.fasta # Upload to BioStreamAI
+├── e_coli.fasta          # Bacterial contamination analysis
+├── salmo_trutta.fasta    # Fish species identification  
+└── custom_database.fasta # Custom genomic analysis
+
+# Upload these files to BioStreamAI tool
+# Backend will process them with real BLAST analysis
 ```
+
+### ✅ Environmental Impact Tracking
+- [ ] Complete water tests in AquaLens → Check Dashboard stats
+- [ ] Complete biodiversity scans → Check Dashboard stats  
+- [ ] Complete EcoTasks → Check Dashboard stats
+- [ ] View Profile page → Check achievements and activity timeline
 
 ## Troubleshooting
 
@@ -81,22 +141,6 @@ sample_data/
 - Use Chrome DevTools to monitor performance
 - Check Network tab for API calls
 - Monitor Console for any errors
-
-## Demo Preparation
-
-### For Hackathon Judges
-1. **Start the application**: `npm start`
-2. **Open multiple tabs** to show different tools
-3. **Prepare sample files** for BioStreamAI demo
-4. **Test audio** for EcoSonification
-5. **Have backup plan** if internet connection fails
-
-### Key Demo Points
-- Show Dashboard with real-time data
-- Demonstrate BioStreamAI with actual FASTA files
-- Play EcoSonification audio
-- Browse UpcyclingAgent project ideas
-- Highlight mobile responsiveness
 
 ## Support
 - Check console for error messages

@@ -6,6 +6,31 @@ const PhantomFootprint = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState(null);
 
+  // Extract product name from URL for better display
+  const extractProductName = (url) => {
+    try {
+      // Extract from common e-commerce URL patterns
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      
+      // Amazon pattern: /product-name/dp/ASIN
+      if (url.includes('amazon')) {
+        const match = pathname.match(/\/([^\/]+)\/dp\//);
+        if (match) return match[1].replace(/-/g, ' ');
+      }
+      
+      // Generic pattern: extract last meaningful segment
+      const segments = pathname.split('/').filter(s => s && s.length > 3);
+      if (segments.length > 0) {
+        return segments[segments.length - 1].replace(/[-_]/g, ' ');
+      }
+      
+      return urlObj.hostname.replace('www.', '');
+    } catch {
+      return 'Product';
+    }
+  };
+
   // This is the fully functional, backend-connected function
   const analyzeURL = async () => {
     if (!url || !url.startsWith('http')) {
@@ -31,7 +56,30 @@ const PhantomFootprint = () => {
       }
       
       console.log("DEBUG: Received footprint analysis:", analysisData);
-      setAnalysis(analysisData);
+      
+      // Enhance the analysis with extracted product name if backend doesn't provide one
+      const enhancedAnalysis = {
+        ...analysisData,
+        productName: analysisData.productName || extractProductName(url)
+      };
+      
+      setAnalysis(enhancedAnalysis);
+
+      // Log activity for environmental impact tracking
+      try {
+        const { authManager } = await import('../utils/auth');
+        await authManager.logActivity('Product footprint analysis completed', {
+          type: 'carbon_reduction',
+          productName: enhancedAnalysis.productName,
+          impactScore: enhancedAnalysis.impactScore,
+          co2Footprint: enhancedAnalysis.phantomFootprint?.totalCO2EquivalentKg || 0,
+          points: 15,
+          amount: enhancedAnalysis.phantomFootprint?.totalCO2EquivalentKg || 1 // For carbonSaved counter
+        });
+        console.log('✅ Phantom footprint analysis activity logged successfully');
+      } catch (error) {
+        console.warn('Failed to log phantom footprint activity:', error);
+      }
         
     } catch (err) {
       console.error("Phantom Footprint analysis error:", err);
@@ -63,6 +111,46 @@ const PhantomFootprint = () => {
           display: 'inline-block', fontSize: '1rem', fontWeight: 'bold'
         }}>
           🔍 URL Analysis • 💧 Water Footprint • 💨 Carbon Tracking • 💡 Smart Choices
+        </div>
+      </div>
+
+      {/* Prototype Disclaimer */}
+      <div style={{
+        background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+        border: '2px solid #ff9800',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '30px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px'
+      }}>
+        <div style={{ fontSize: '2.5rem' }}>⚠️</div>
+        <div style={{ flex: 1 }}>
+          <h4 style={{ 
+            color: '#e65100', 
+            marginBottom: '8px',
+            fontSize: '1.1rem',
+            fontWeight: '600'
+          }}>
+            Prototype Demonstration
+          </h4>
+          <p style={{ 
+            fontSize: '0.95rem', 
+            lineHeight: '1.5', 
+            color: '#bf360c',
+            marginBottom: '8px'
+          }}>
+            <strong>This tool uses simulated data for demonstration purposes.</strong>
+          </p>
+          <p style={{ 
+            fontSize: '0.85rem', 
+            color: '#8d4e00', 
+            lineHeight: '1.4'
+          }}>
+            All product analysis, environmental impact calculations, and footprint data are generated examples. 
+            Production version would integrate with real supply chain databases and lifecycle assessment APIs.
+          </p>
         </div>
       </div>
 

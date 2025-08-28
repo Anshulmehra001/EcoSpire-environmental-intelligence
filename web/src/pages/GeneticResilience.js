@@ -1,204 +1,579 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const GeneticResilience = () => {
+function GeneticResilience({ onNavigate, onActivityComplete }) {
   const [selectedCrop, setSelectedCrop] = useState('wheat');
-  const [targetRegion, setTargetRegion] = useState('');
-  const [climateScenario, setClimateScenario] = useState('2030');
-  const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [climateScenario, setClimateScenario] = useState('current');
+  const [selectedRegion, setSelectedRegion] = useState('midwest');
 
-  const crops = [
-    { id: 'wheat', name: 'Wheat', icon: '🌾' },
-    { id: 'corn', name: 'Corn/Maize', icon: '🌽' },
-    { id: 'rice', name: 'Rice', icon: '🍚' },
-    { id: 'soybean', name: 'Soybean', icon: '🫘' },
-    { id: 'potato', name: 'Potato', icon: '🥔' },
-    { id: 'tomato', name: 'Tomato', icon: '🍅' }
-  ];
-
-  const climateScenarios = [
-    { id: '2030', name: '2030 Projections', temp: '+1.5°C', precip: '-5%' },
-    { id: '2050', name: '2050 Projections', temp: '+2.5°C', precip: '-12%' },
-    { id: '2070', name: '2070 Projections', temp: '+3.2°C', precip: '-18%' },
-    { id: '2100', name: '2100 Projections', temp: '+4.1°C', precip: '-25%' }
-  ];
-
-
-
-  const analyzeGeneticResilience = async () => {
-    setLoading(true);
-    setAnalysis(null);
-    
-    setTimeout(async () => {
-      const scenario = climateScenarios.find(s => s.id === climateScenario);
-      const mockAnalysis = {
-        crop: selectedCrop, region: targetRegion || 'Global Analysis', climateScenario: scenario,
-        analysisDate: new Date().toISOString(), confidence: 92,
-        currentVulnerabilities: [
-          { factor: 'Heat Stress', severity: 'High', impact: 'Reduced yield by 25-40% above 35°C', affectedGenes: ['HSP70', 'HSP90', 'DREB2A'], currentTolerance: '32°C maximum' },
-          { factor: 'Drought Stress', severity: 'Critical', impact: 'Yield loss 15-60% with water deficit', affectedGenes: ['ABA2', 'NCED3', 'RD29A'], currentTolerance: '40% water reduction limit' },
-          { factor: 'Salt Tolerance', severity: 'Medium', impact: 'Growth inhibition in saline soils', affectedGenes: ['SOS1', 'NHX1', 'HKT1'], currentTolerance: '4 dS/m salinity' }
-        ],
-        geneticSolutions: [
-          { trait: 'Enhanced Heat Tolerance', targetGenes: ['HSP101', 'HSFA2', 'APX2'], source: 'Aegilops tauschii (wild wheat)', mechanism: 'Heat shock protein upregulation', expectedImprovement: 'Tolerance up to 42°C (+10°C)', yieldProtection: '85% yield retention at 38°C', breedingTime: '6-8 years', difficulty: 'Medium', confidence: 94 },
-          { trait: 'Drought Resistance', targetGenes: ['DREB1A', 'LEA14', 'P5CS1'], source: 'Triticum turgidum (durum wheat)', mechanism: 'Osmotic adjustment and water retention', expectedImprovement: 'Survive 60% water reduction', yieldProtection: '70% yield under drought stress', breedingTime: '5-7 years', difficulty: 'High', confidence: 89 },
-          { trait: 'Improved Water Use Efficiency', targetGenes: ['AQP7', 'PIP2-1', 'TIP1-1'], source: 'Synthetic wheat varieties', mechanism: 'Enhanced aquaporin expression', expectedImprovement: '40% better water efficiency', yieldProtection: 'Maintain yield with 30% less water', breedingTime: '4-6 years', difficulty: 'Medium', confidence: 91 }
-        ],
-        breedingStrategy: {
-          phase1: { name: 'Genetic Screening', duration: '12-18 months', activities: ['Screen wild relatives for target genes', 'Validate gene function in controlled conditions', 'Develop molecular markers'] },
-          phase2: { name: 'Cross-breeding Program', duration: '3-4 years', activities: ['Cross elite varieties with wild donors', 'Marker-assisted selection', 'Backcrossing to recover elite background'] },
-          phase3: { name: 'Field Testing', duration: '2-3 years', activities: ['Multi-location trials', 'Climate stress testing', 'Yield stability assessment'] }
-        },
-        impactProjections: { yieldStability: '+35% under climate stress', waterSavings: '2.1 billion liters annually', co2Reduction: '450,000 tons (reduced irrigation)', foodSecurity: '15% increase in reliable production', economicValue: '$2.8 billion in protected yields' },
-        riskAssessment: {
-          technicalRisks: ['Gene linkage drag reducing other traits', 'Unintended effects on grain quality', 'Adaptation to local growing conditions'],
-          timelineRisks: ['Regulatory approval delays', 'Farmer adoption challenges', 'Climate change accelerating faster than breeding'],
-          mitigationStrategies: ['Multiple gene sources and pathways', 'Extensive quality testing protocols', 'Participatory breeding with farmers']
-        }
-      };
-      setAnalysis(mockAnalysis);
-      setLoading(false);
-    }, 3500);
-  };
-
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'Critical': return '#f44336'; case 'High': return '#FF9800'; case 'Medium': return '#FFC107'; default: return '#4CAF50';
+  const cropDatabase = {
+    wheat: {
+      name: 'Winter Wheat',
+      icon: '�',
+      currentYield: '47.2 bu/acre',
+      resilience: 72,
+      threats: ['Heat Stress', 'Drought', 'Rust Disease'],
+      adaptations: ['Heat-tolerant varieties', 'Drought-resistant genes', 'Disease resistance'],
+      geneticMarkers: ['TaHSP90', 'TaDREB1', 'TaWRKY19'],
+      climateImpact: {
+        current: { yield: 47.2, risk: 'Medium' },
+        '2030': { yield: 43.8, risk: 'High' },
+        '2050': { yield: 38.5, risk: 'Very High' }
+      }
+    },
+    corn: {
+      name: 'Field Corn',
+      icon: '🌽',
+      currentYield: '172.0 bu/acre',
+      resilience: 68,
+      threats: ['Heat Waves', 'Water Stress', 'Corn Borer'],
+      adaptations: ['Drought tolerance', 'Heat shock proteins', 'Bt resistance'],
+      geneticMarkers: ['ZmDREB2A', 'ZmHSP101', 'ZmNAC111'],
+      climateImpact: {
+        current: { yield: 172.0, risk: 'Medium' },
+        '2030': { yield: 165.4, risk: 'High' },
+        '2050': { yield: 151.2, risk: 'Very High' }
+      }
+    },
+    soybean: {
+      name: 'Soybeans',
+      icon: '🫘',
+      currentYield: '50.2 bu/acre',
+      resilience: 75,
+      threats: ['Temperature Extremes', 'Flooding', 'Soybean Rust'],
+      adaptations: ['Flood tolerance', 'Temperature stability', 'Fungal resistance'],
+      geneticMarkers: ['GmDREB1', 'GmHSF4', 'GmWRKY142'],
+      climateImpact: {
+        current: { yield: 50.2, risk: 'Low' },
+        '2030': { yield: 48.9, risk: 'Medium' },
+        '2050': { yield: 45.1, risk: 'High' }
+      }
+    },
+    rice: {
+      name: 'Rice',
+      icon: '🍚',
+      currentYield: '7,510 lbs/acre',
+      resilience: 81,
+      threats: ['Salinity', 'Submergence', 'Blast Disease'],
+      adaptations: ['Salt tolerance', 'Submergence tolerance', 'Blast resistance'],
+      geneticMarkers: ['OsDREB2A', 'OsSUB1A', 'OsPi21'],
+      climateImpact: {
+        current: { yield: 7510, risk: 'Low' },
+        '2030': { yield: 7285, risk: 'Medium' },
+        '2050': { yield: 6890, risk: 'Medium' }
+      }
     }
   };
 
+  const regions = {
+    midwest: { name: 'Midwest USA', climate: 'Continental', avgTemp: '10.5°C' },
+    southeast: { name: 'Southeast USA', climate: 'Humid Subtropical', avgTemp: '18.2°C' },
+    southwest: { name: 'Southwest USA', climate: 'Arid', avgTemp: '16.8°C' },
+    pacific: { name: 'Pacific Northwest', climate: 'Oceanic', avgTemp: '11.1°C' }
+  };
 
+  const runAnalysis = async () => {
+    setIsAnalyzing(true);
+    
+    // Simulate AI analysis
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    const crop = cropDatabase[selectedCrop];
+    const region = regions[selectedRegion];
+    
+    const results = {
+      crop: crop,
+      region: region,
+      resilience: {
+        overall: crop.resilience,
+        drought: Math.floor(Math.random() * 30) + 60,
+        heat: Math.floor(Math.random() * 25) + 65,
+        disease: Math.floor(Math.random() * 35) + 55,
+        flood: Math.floor(Math.random() * 40) + 50
+      },
+      recommendations: generateRecommendations(crop, region),
+      geneticProfile: generateGeneticProfile(crop),
+      projections: crop.climateImpact
+    };
+    
+    setAnalysisResults(results);
+    setIsAnalyzing(false);
+
+    // Log activity
+    if (onActivityComplete) {
+      onActivityComplete({
+        type: 'carbon_reduction',
+        amount: 2,
+        points: 25,
+        description: `Analyzed genetic resilience for ${crop.name}`
+      });
+    }
+  };
+
+  const generateRecommendations = (crop, region) => {
+    const recommendations = [
+      {
+        category: 'Genetic Enhancement',
+        priority: 'High',
+        action: `Introduce ${crop.geneticMarkers[0]} gene for enhanced stress tolerance`,
+        impact: 'Increase yield stability by 15-20%',
+        timeline: '2-3 growing seasons'
+      },
+      {
+        category: 'Breeding Strategy',
+        priority: 'High',
+        action: 'Cross with drought-resistant local varieties',
+        impact: 'Improve water use efficiency by 25%',
+        timeline: '3-4 years'
+      },
+      {
+        category: 'Management Practice',
+        priority: 'Medium',
+        action: 'Implement precision irrigation systems',
+        impact: 'Reduce water usage by 30%',
+        timeline: '1 growing season'
+      },
+      {
+        category: 'Climate Adaptation',
+        priority: 'High',
+        action: 'Develop heat-shock protein expression',
+        impact: 'Maintain yield under +3°C temperature increase',
+        timeline: '4-5 years'
+      }
+    ];
+    
+    return recommendations;
+  };
+
+  const generateGeneticProfile = (crop) => {
+    return {
+      totalGenes: Math.floor(Math.random() * 5000) + 25000,
+      stressGenes: Math.floor(Math.random() * 200) + 150,
+      yieldGenes: Math.floor(Math.random() * 100) + 80,
+      diseaseResistance: Math.floor(Math.random() * 50) + 30,
+      keyMarkers: crop.geneticMarkers,
+      diversity: Math.floor(Math.random() * 20) + 70
+    };
+  };
+
+  const getRiskColor = (risk) => {
+    const colors = {
+      'Low': '#4CAF50',
+      'Medium': '#FF9800',
+      'High': '#FF5722',
+      'Very High': '#D32F2F'
+    };
+    return colors[risk] || '#666';
+  };
+
+  const getResilienceColor = (score) => {
+    if (score >= 80) return '#4CAF50';
+    if (score >= 60) return '#8BC34A';
+    if (score >= 40) return '#FF9800';
+    return '#FF5722';
+  };
 
   return (
-    <div className="container">
+    <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '3.5rem', color: '#2E7D32', marginBottom: '10px' }}>
-          🧬 Genetic Resilience Engine
-        </h2>
-        <p style={{ fontSize: '1.3rem', color: '#666', marginBottom: '15px' }}>
-          AI-powered discovery of climate-resilient crop traits for future food security
+        <h1 style={{ fontSize: '3rem', color: '#2E7D32', marginBottom: '10px' }}>
+          🧬 Genetic Resilience Analyzer
+        </h1>
+        <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '20px' }}>
+          AI-powered climate adaptation analysis for crop genetic enhancement
         </p>
+        <div style={{
+          background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+          color: 'white',
+          padding: '12px 25px',
+          borderRadius: '20px',
+          display: 'inline-block',
+          fontSize: '0.9rem',
+          fontWeight: 'bold'
+        }}>
+          🌾 Climate-Smart Agriculture • 🧬 Genetic Engineering • 📊 Predictive Modeling
+        </div>
       </div>
 
-      {/* Problem & Solution Cards */}
-      <div className="card" style={{ marginBottom: '30px', background: 'linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)', border: '2px solid #f44336' }}>
-        <h3 style={{ color: '#d32f2f', marginBottom: '15px' }}>🚨 The Climate-Food Crisis</h3>
-        <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-          Climate change threatens global food security. Traditional breeding takes 15-20 years to develop resilient crops — a timeline too slow for our rapidly changing planet.
-        </p>
-      </div>
-      <div className="card" style={{ marginBottom: '30px', background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)', border: '2px solid #4CAF50' }}>
-        <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>💡 The Genetic Acceleration Revolution</h3>
-        <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
-          Our AI compresses decades of breeding into years. By analyzing vast genomic and climate databases, it pinpoints the exact genes for climate resilience, designing the super-crops of tomorrow, today.
-        </p>
-      </div>
-
-      {/* Input Form */}
-      <div className="card" style={{ marginBottom: '30px' }}>
-        <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>🔬 Analysis Parameters</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', alignItems: 'flex-end' }}>
-          <div>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Select Crop:</label>
-            <select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)} style={{ width: '100%', padding: '12px', fontSize: '1rem', borderRadius: '8px', border: '1px solid #ccc' }}>
-              {crops.map(crop => <option key={crop.id} value={crop.id}>{crop.icon} {crop.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Target Region (Optional):</label>
-            <input type="text" value={targetRegion} onChange={(e) => setTargetRegion(e.target.value)} placeholder="e.g., Nile Delta, Egypt" style={{ width: '100%', padding: '12px', fontSize: '1rem', borderRadius: '8px', border: '1px solid #ccc' }} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>Climate Scenario:</label>
-            <select value={climateScenario} onChange={(e) => setClimateScenario(e.target.value)} style={{ width: '100%', padding: '12px', fontSize: '1rem', borderRadius: '8px', border: '1px solid #ccc' }}>
-              {climateScenarios.map(sc => <option key={sc.id} value={sc.id}>{sc.name} ({sc.temp}, {sc.precip})</option>)}
-            </select>
-          </div>
-          <button onClick={analyzeGeneticResilience} disabled={loading} style={{
-            padding: '12px 24px', background: loading ? '#ccc' : 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)', border: 'none',
-            borderRadius: '8px', color: 'white', fontWeight: 'bold', fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer'
+      {/* Prototype Disclaimer */}
+      <div style={{
+        background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+        border: '2px solid #ff9800',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '30px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px'
+      }}>
+        <div style={{ fontSize: '2.5rem' }}>⚠️</div>
+        <div style={{ flex: 1 }}>
+          <h4 style={{ 
+            color: '#e65100', 
+            marginBottom: '8px',
+            fontSize: '1.1rem',
+            fontWeight: '600'
           }}>
-            {loading ? 'Analyzing...' : 'Run Resilience Analysis'}
+            Prototype Demonstration
+          </h4>
+          <p style={{ 
+            fontSize: '0.95rem', 
+            lineHeight: '1.5', 
+            color: '#bf360c',
+            marginBottom: '8px'
+          }}>
+            <strong>This tool uses simulated data for demonstration purposes.</strong>
+          </p>
+          <p style={{ 
+            fontSize: '0.85rem', 
+            color: '#8d4e00', 
+            lineHeight: '1.4'
+          }}>
+            All genetic analysis, resilience scores, and climate projections are generated examples. 
+            Production version would integrate with real genomic databases and climate modeling systems.
+          </p>
+        </div>
+      </div>
+
+      {/* Analysis Controls */}
+      <div style={{
+        background: 'white',
+        borderRadius: '15px',
+        padding: '30px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+        marginBottom: '30px'
+      }}>
+        <h2 style={{ color: '#2E7D32', marginBottom: '25px', textAlign: 'center' }}>
+          🔬 Configure Analysis Parameters
+        </h2>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '25px' }}>
+          {/* Crop Selection */}
+          <div>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>
+              🌾 Select Crop Type
+            </label>
+            <select
+              value={selectedCrop}
+              onChange={(e) => setSelectedCrop(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #ddd',
+                fontSize: '1rem',
+                background: 'white'
+              }}
+            >
+              {Object.entries(cropDatabase).map(([key, crop]) => (
+                <option key={key} value={key}>
+                  {crop.icon} {crop.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Region Selection */}
+          <div>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>
+              🌍 Growing Region
+            </label>
+            <select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #ddd',
+                fontSize: '1rem',
+                background: 'white'
+              }}
+            >
+              {Object.entries(regions).map(([key, region]) => (
+                <option key={key} value={key}>
+                  {region.name} ({region.climate})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Climate Scenario */}
+          <div>
+            <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '10px', color: '#333' }}>
+              🌡️ Climate Scenario
+            </label>
+            <select
+              value={climateScenario}
+              onChange={(e) => setClimateScenario(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '2px solid #ddd',
+                fontSize: '1rem',
+                background: 'white'
+              }}
+            >
+              <option value="current">Current Climate (2024)</option>
+              <option value="2030">Near Future (2030)</option>
+              <option value="2050">Mid-Century (2050)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '25px' }}>
+          <button
+            onClick={runAnalysis}
+            disabled={isAnalyzing}
+            style={{
+              background: isAnalyzing 
+                ? 'linear-gradient(135deg, #ccc 0%, #999 100%)'
+                : 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '15px 40px',
+              borderRadius: '25px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              cursor: isAnalyzing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              margin: '0 auto'
+            }}
+          >
+            {isAnalyzing ? '🔄 Analyzing Genetic Data...' : '🧬 Run Resilience Analysis'}
           </button>
         </div>
       </div>
-      
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="card" style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: '4px solid #f3f3f3', borderTop: '4px solid #2E7D32', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' }}></div>
-          <p>Analyzing genomic data against climate models...</p>
-        </div>
-      )}
 
-      {/* Results Dashboard */}
-      {analysis && (
-        <div style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-          {/* Top Level Summary Card */}
-          <div className="card" style={{ marginBottom: '30px', background: '#f5f5f5' }}>
-            <h3 style={{ color: '#2E7D32', borderBottom: '2px solid #4CAF50', paddingBottom: '10px' }}>Analysis Complete: Climate-Resilient {crops.find(c=>c.id === analysis.crop)?.name}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '20px' }}>
-              <div style={{ textAlign: 'center' }}><p style={{margin: 0, fontWeight: 'bold'}}>Target Region</p><p style={{fontSize: '1.2rem'}}>{analysis.region}</p></div>
-              <div style={{ textAlign: 'center' }}><p style={{margin: 0, fontWeight: 'bold'}}>Climate Scenario</p><p style={{fontSize: '1.2rem'}}>{analysis.climateScenario.name}</p></div>
-              <div style={{ textAlign: 'center' }}><p style={{margin: 0, fontWeight: 'bold'}}>Projected Yield Stability</p><p style={{fontSize: '1.2rem', color: '#4CAF50'}}>{analysis.impactProjections.yieldStability}</p></div>
-              <div style={{ textAlign: 'center' }}><p style={{margin: 0, fontWeight: 'bold'}}>Estimated Breeding Time</p><p style={{fontSize: '1.2rem'}}>~{analysis.geneticSolutions[0].breedingTime}</p></div>
+      {/* Analysis Results */}
+      {analysisResults && (
+        <div style={{ display: 'grid', gap: '25px' }}>
+          {/* Overview Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>
+                {analysisResults.crop.icon}
+              </div>
+              <h3 style={{ color: '#2E7D32', marginBottom: '10px' }}>
+                {analysisResults.crop.name}
+              </h3>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#FF9800' }}>
+                {analysisResults.crop.currentYield}
+              </div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>Current Yield</div>
+            </div>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🛡️</div>
+              <h3 style={{ color: '#2E7D32', marginBottom: '10px' }}>
+                Resilience Score
+              </h3>
+              <div style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 'bold', 
+                color: getResilienceColor(analysisResults.resilience.overall)
+              }}>
+                {analysisResults.resilience.overall}/100
+              </div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>Climate Adaptation</div>
+            </div>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🧬</div>
+              <h3 style={{ color: '#2E7D32', marginBottom: '10px' }}>
+                Genetic Diversity
+              </h3>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#9C27B0' }}>
+                {analysisResults.geneticProfile.diversity}%
+              </div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>Genetic Variation</div>
+            </div>
+
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '10px' }}>⚠️</div>
+              <h3 style={{ color: '#2E7D32', marginBottom: '10px' }}>
+                Climate Risk
+              </h3>
+              <div style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 'bold', 
+                color: getRiskColor(analysisResults.projections[climateScenario].risk)
+              }}>
+                {analysisResults.projections[climateScenario].risk}
+              </div>
+              <div style={{ color: '#666', fontSize: '0.9rem' }}>
+                {climateScenario === 'current' ? '2024' : climateScenario}
+              </div>
             </div>
           </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-            {/* Column 1: Vulnerabilities & Solutions */}
-            <div>
-              {/* Current Vulnerabilities */}
-              <div className="card" style={{ marginBottom: '30px' }}>
-                <h4 style={{ color: '#d32f2f', marginBottom: '15px' }}>Current Vulnerabilities</h4>
-                {analysis.currentVulnerabilities.map((vul, i) => (
-                  <div key={i} style={{ marginBottom: '10px', borderLeft: `4px solid ${getSeverityColor(vul.severity)}`, paddingLeft: '10px' }}>
-                    <strong style={{color: getSeverityColor(vul.severity)}}>{vul.factor} ({vul.severity})</strong>
-                    <p style={{fontSize: '0.9rem', color: '#666', margin: '5px 0'}}>Impact: {vul.impact}</p>
-                  </div>
-                ))}
-              </div>
-              {/* Genetic Solutions */}
-              <div className="card">
-                <h4 style={{ color: '#4CAF50', marginBottom: '15px' }}>Proposed Genetic Solutions</h4>
-                {analysis.geneticSolutions.map((sol, i) => (
-                  <div key={i} style={{ background: '#f9f9f9', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
-                    <strong style={{color: '#2E7D32'}}>{sol.trait}</strong>
-                    <p style={{fontSize: '0.9rem', color: '#666', margin: '5px 0'}}><strong>Source:</strong> {sol.source}</p>
-                    <p style={{fontSize: '0.9rem', color: '#666', margin: '5px 0'}}><strong>Improvement:</strong> <span style={{color: '#4CAF50', fontWeight: 'bold'}}>{sol.expectedImprovement}</span></p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {/* Column 2: Strategy and Impact */}
-            <div>
-              {/* Breeding Strategy */}
-              <div className="card">
-                <h4 style={{ color: '#2E7D32', marginBottom: '15px' }}>Accelerated Breeding Strategy</h4>
-                {Object.values(analysis.breedingStrategy).map((phase, i) => (
-                  <div key={i} style={{ marginBottom: '15px' }}>
-                    <div style={{display: 'flex', alignItems: 'center'}}>
-                      <span style={{width: '30px', height: '30px', borderRadius: '50%', background: '#2E7D32', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '10px', fontWeight: 'bold'}}>{i + 1}</span>
-                      <h5 style={{margin: 0}}>{phase.name} ({phase.duration})</h5>
+
+          {/* Detailed Analysis */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '25px' }}>
+            {/* Resilience Breakdown */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            }}>
+              <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>
+                🛡️ Resilience Breakdown
+              </h3>
+              {Object.entries(analysisResults.resilience).map(([key, value]) => {
+                if (key === 'overall') return null;
+                return (
+                  <div key={key} style={{ marginBottom: '15px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                      <span style={{ textTransform: 'capitalize', fontWeight: 'bold' }}>
+                        {key} Tolerance
+                      </span>
+                      <span style={{ color: getResilienceColor(value), fontWeight: 'bold' }}>
+                        {value}%
+                      </span>
                     </div>
-                    <ul style={{fontSize: '0.9rem', color: '#666', paddingLeft: '45px', listStyle: 'disc'}}>
-                      {phase.activities.map((act, j) => <li key={j}>{act}</li>)}
-                    </ul>
+                    <div style={{
+                      background: '#f0f0f0',
+                      borderRadius: '10px',
+                      height: '8px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        background: getResilienceColor(value),
+                        height: '100%',
+                        width: `${value}%`,
+                        borderRadius: '10px',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+
+            {/* Climate Projections */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '25px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+            }}>
+              <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>
+                📈 Yield Projections
+              </h3>
+              {Object.entries(analysisResults.projections).map(([scenario, data]) => (
+                <div key={scenario} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px',
+                  marginBottom: '10px',
+                  background: scenario === climateScenario ? '#e8f5e8' : '#f9f9f9',
+                  borderRadius: '8px',
+                  border: scenario === climateScenario ? '2px solid #4CAF50' : '1px solid #ddd'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>
+                      {scenario === 'current' ? 'Current (2024)' : scenario}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                      {typeof data.yield === 'number' ? data.yield.toLocaleString() : data.yield} 
+                      {selectedCrop === 'rice' ? ' lbs/acre' : ' bu/acre'}
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '4px 12px',
+                    borderRadius: '15px',
+                    background: getRiskColor(data.risk),
+                    color: 'white',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {data.risk}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '25px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ color: '#2E7D32', marginBottom: '20px' }}>
+              💡 Enhancement Recommendations
+            </h3>
+            <div style={{ display: 'grid', gap: '15px' }}>
+              {analysisResults.recommendations.map((rec, index) => (
+                <div key={index} style={{
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  padding: '20px',
+                  background: rec.priority === 'High' ? '#fff3e0' : '#f9f9f9'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <h4 style={{ color: '#2E7D32', margin: 0 }}>
+                      {rec.category}
+                    </h4>
+                    <span style={{
+                      padding: '4px 12px',
+                      borderRadius: '15px',
+                      background: rec.priority === 'High' ? '#FF9800' : '#4CAF50',
+                      color: 'white',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold'
+                    }}>
+                      {rec.priority} Priority
+                    </span>
+                  </div>
+                  <p style={{ margin: '10px 0', color: '#333' }}>
+                    <strong>Action:</strong> {rec.action}
+                  </p>
+                  <p style={{ margin: '10px 0', color: '#666' }}>
+                    <strong>Expected Impact:</strong> {rec.impact}
+                  </p>
+                  <p style={{ margin: '10px 0', color: '#666' }}>
+                    <strong>Timeline:</strong> {rec.timeline}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      `}</style>
     </div>
   );
-};
+}
 
 export default GeneticResilience;

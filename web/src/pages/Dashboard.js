@@ -18,8 +18,7 @@ const formatTimeAgo = (timestamp) => {
   return time.toLocaleDateString();
 };
 
-function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
-  const [currentTime, setCurrentTime] = useState(new Date());
+function Dashboard({ onNavigate, currentUser, onActivityComplete, userStats }) {
   const [stats, setStats] = useState({
     carbonSaved: 0,
     waterTests: 0,
@@ -37,28 +36,44 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
   });
   const [environmentalAlerts, setEnvironmentalAlerts] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
-  const [worldClock, setWorldClock] = useState({});
   const [globalStats, setGlobalStats] = useState({});
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-      updateWorldClock();
-    }, 1000);
     
     // Load user data and environmental data
     const loadUserData = async () => {
       try {
-        // Get real user stats from auth manager
-        const userStats = authManager.getUserStats();
-        setStats({
-          carbonSaved: userStats.carbonSaved || 0,
-          waterTests: userStats.waterTests || 0,
-          biodiversityScans: userStats.biodiversityScans || 0,
-          wasteReduced: userStats.wasteReduced || 0,
-          energySaved: userStats.energySaved || 0,
-          treesPlanted: userStats.treesPlanted || 0
-        });
+        // Use userStats from props if available, otherwise get from auth manager
+        const authStats = authManager.getUserStats();
+        const statsToUse = userStats || authStats;
+        
+        const initialStats = {
+          carbonSaved: statsToUse.carbonSaved || 0,
+          waterTests: statsToUse.waterTests || 0,
+          biodiversityScans: statsToUse.biodiversityScans || 0,
+          wasteReduced: statsToUse.wasteReduced || 0,
+          energySaved: statsToUse.energySaved || 0,
+          treesPlanted: statsToUse.treesPlanted || 0
+        };
+
+        // Only apply demo stats for actual guest users, not logged-in users
+        if (currentUser?.isGuest === true) {
+          // Check if guest user has any real activities first
+          const hasRealStats = initialStats.carbonSaved > 0 || initialStats.waterTests > 0 || initialStats.biodiversityScans > 0;
+          
+          if (!hasRealStats) {
+            // Use same demo values as header for consistency (only for guest)
+            initialStats.carbonSaved = 12;
+            initialStats.waterTests = 3;
+            initialStats.biodiversityScans = 2;
+            initialStats.wasteReduced = 1;
+            initialStats.energySaved = 45;
+            initialStats.treesPlanted = 0; // Start with 0 until user completes tree tasks
+          }
+        }
+        // For logged-in users, always use their real stats (even if zero)
+        
+        setStats(initialStats);
 
         // Load real activity data
         await loadRecentActivity();
@@ -211,19 +226,7 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
       }));
     };
 
-    // Update world clock with major cities
-    const updateWorldClock = () => {
-      const now = new Date();
-      setWorldClock({
-        utc: now.toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false }),
-        newYork: now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false }),
-        london: now.toLocaleTimeString('en-US', { timeZone: 'Europe/London', hour12: false }),
-        tokyo: now.toLocaleTimeString('en-US', { timeZone: 'Asia/Tokyo', hour12: false }),
-        sydney: now.toLocaleTimeString('en-US', { timeZone: 'Australia/Sydney', hour12: false }),
-        mumbai: now.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour12: false }),
-        sao_paulo: now.toLocaleTimeString('en-US', { timeZone: 'America/Sao_Paulo', hour12: false })
-      });
-    };
+
 
     // Load global community statistics
     const loadGlobalStats = async () => {
@@ -324,10 +327,31 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
 
     // Initialize everything
     loadUserData();
-    updateWorldClock();
     
-    return () => clearInterval(timer);
+    // No separate refresh interval - rely on props from App component
   }, [currentUser]);
+
+  // Update stats immediately when userStats prop changes
+  useEffect(() => {
+    if (userStats) {
+      const newStats = {
+        carbonSaved: userStats.carbonSaved || 0,
+        waterTests: userStats.waterTests || 0,
+        biodiversityScans: userStats.biodiversityScans || 0,
+        wasteReduced: userStats.wasteReduced || 0,
+        energySaved: userStats.energySaved || 0,
+        treesPlanted: userStats.treesPlanted || 0
+      };
+      
+      // Only update if stats actually changed to prevent unnecessary re-renders
+      setStats(prevStats => {
+        const hasChanged = Object.keys(newStats).some(key => prevStats[key] !== newStats[key]);
+        return hasChanged ? newStats : prevStats;
+      });
+    }
+  }, [userStats]);
+
+  // Removed manual refresh function - using props from App component
 
   const tools = [
     {
@@ -562,6 +586,79 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
             >
               🔑 Sign In
             </button>
+            <button
+              onClick={async () => {
+                try {
+                  // Test environmental impact tracking
+                  const { authManager } = await import('../utils/auth');
+                  
+                  // Add multiple test activities
+                  await authManager.logActivity('Analyzed water quality with AquaLens', { 
+                    type: 'water_test', 
+                    points: 20, 
+                    amount: 1,
+                    location: 'Test Location'
+                  });
+                  
+                  await authManager.logActivity('Identified bird species with BiodiversityEar', { 
+                    type: 'biodiversity_scan', 
+                    points: 25, 
+                    amount: 1,
+                    species: 'Robin'
+                  });
+                  
+                  await authManager.logActivity('Reduced carbon footprint', { 
+                    type: 'carbon_reduction', 
+                    points: 15, 
+                    amount: 5,
+                    action: 'Used public transport'
+                  });
+                  
+                  await authManager.logActivity('Recycled electronic waste', { 
+                    type: 'waste_reduction', 
+                    points: 10, 
+                    amount: 2,
+                    material: 'Electronics'
+                  });
+
+                  await authManager.logActivity('Saved energy with smart optimization', { 
+                    type: 'energy_saved', 
+                    points: 12, 
+                    amount: 15,
+                    method: 'Smart thermostat'
+                  });
+                  
+                  // Trigger stats refresh through parent component
+                  if (onActivityComplete) {
+                    onActivityComplete({ type: 'test_activities', description: 'Test activities completed' });
+                  }
+                  
+                  // Show success message
+                  alert('🎉 Test activities added successfully!\n\n' +
+                        '• Water test completed (+1)\n' +
+                        '• Biodiversity scan completed (+1)\n' +
+                        '• Carbon reduced (+5 kg)\n' +
+                        '• Waste recycled (+2 tons)\n' +
+                        '• Energy saved (+15 kWh)\n\n' +
+                        'Check your updated environmental impact stats above!');
+                        
+                } catch (error) {
+                  console.error('Error adding test activities:', error);
+                  alert('Error adding test activities. Please try again.');
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                background: '#2196F3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '0.9rem',
+                cursor: 'pointer'
+              }}
+            >
+              🧪 Test Impact Tracking
+            </button>
           </div>
         </div>
       )}
@@ -618,59 +715,7 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
       )}
 
       {/* Global Time & Date */}
-      <div className="card" style={{ 
-        marginBottom: '30px', 
-        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-        border: '2px solid #2196F3'
-      }}>
-        <h3 style={{ color: '#1976d2', marginBottom: '20px', textAlign: 'center' }}>
-          🕐 Global Time Zones
-        </h3>
-        
-        {/* Local Time - Prominent */}
-        <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1976d2', marginBottom: '5px' }}>
-            {currentTime.toLocaleTimeString()}
-          </div>
-          <div style={{ fontSize: '1.1rem', color: '#666', marginBottom: '5px' }}>
-            Your Local Time
-          </div>
-          <div style={{ fontSize: '0.9rem', color: '#666' }}>
-            {currentTime.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </div>
-        </div>
 
-        {/* World Clock */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '15px' }}>
-          {[
-            { city: 'UTC', time: worldClock.utc, flag: '🌍' },
-            { city: 'New York', time: worldClock.newYork, flag: '🇺🇸' },
-            { city: 'London', time: worldClock.london, flag: '🇬🇧' },
-            { city: 'Tokyo', time: worldClock.tokyo, flag: '🇯🇵' },
-            { city: 'Sydney', time: worldClock.sydney, flag: '🇦🇺' },
-            { city: 'Mumbai', time: worldClock.mumbai, flag: '🇮🇳' },
-            { city: 'São Paulo', time: worldClock.sao_paulo, flag: '🇧🇷' }
-          ].map((zone, index) => (
-            <div key={index} style={{
-              textAlign: 'center',
-              padding: '10px',
-              background: 'rgba(255,255,255,0.7)',
-              borderRadius: '8px'
-            }}>
-              <div style={{ fontSize: '1.2rem', marginBottom: '2px' }}>{zone.flag}</div>
-              <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1976d2' }}>
-                {zone.time}
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#666' }}>{zone.city}</div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Environmental Alerts */}
       {environmentalAlerts.length > 0 && (
@@ -802,9 +847,11 @@ function Dashboard({ onNavigate, currentUser, onActivityComplete }) {
 
       {/* Environmental Impact Stats */}
       <div style={{ marginBottom: '40px' }}>
-        <h3 style={{ color: '#2E7D32', marginBottom: '20px', textAlign: 'center' }}>
-          🌱 Your Environmental Impact
-        </h3>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
+          <h3 style={{ color: '#2E7D32', margin: 0 }}>
+            🌱 Your Environmental Impact
+          </h3>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           {[
             { icon: '🌱', value: (stats.carbonSaved || 0).toLocaleString(), label: 'kg CO₂ Saved', color: '#4CAF50' },

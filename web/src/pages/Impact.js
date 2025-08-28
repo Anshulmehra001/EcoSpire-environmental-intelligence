@@ -655,7 +655,12 @@ function Impact() {
         </p>
         <div className="grid grid-2">
           {projects.map(project => (
-            <div key={project.id} className="card" style={{ position: 'relative' }}>
+            <div key={project.id} className="card" style={{ 
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%'
+            }}>
               <div style={{
                 position: 'absolute',
                 top: '15px',
@@ -707,7 +712,7 @@ function Impact() {
                 </div>
               </div>
               
-              <div style={{ marginBottom: '15px', fontSize: '0.85rem' }}>
+              <div style={{ marginBottom: '15px', fontSize: '0.85rem', flex: 1 }}>
                 <p style={{ color: '#2E7D32', fontWeight: 'bold', marginBottom: '5px' }}>
                   🎯 {project.impact}
                 </p>
@@ -719,7 +724,7 @@ function Impact() {
                 </p>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                 <button 
                   onClick={() => window.open(getProjectLink(project.id), '_blank')}
                   style={{

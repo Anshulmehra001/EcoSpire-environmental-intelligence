@@ -203,6 +203,22 @@ function BiodiversityEar({ onActivityComplete }) {
 
       setAnalysis(finalAnalysis);
 
+      // Log activity for environmental impact tracking
+      try {
+        const { authManager } = await import('../utils/auth');
+        await authManager.logActivity('Biodiversity scan completed', {
+          type: 'biodiversity_scan',
+          region: selectedRegion,
+          speciesCount: finalAnalysis.speciesDetected?.length || 0,
+          ecosystemHealth: finalAnalysis.biodiversityMetrics?.ecosystemHealth || 'Unknown',
+          points: 25,
+          amount: 1 // For biodiversityScans counter
+        });
+        console.log('✅ Biodiversity scan activity logged successfully');
+      } catch (error) {
+        console.warn('Failed to log biodiversity activity:', error);
+      }
+
       // Persist the results to the local client-side database.
       try {
         await biodiversityDB.saveRecording(finalAnalysis);

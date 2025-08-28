@@ -1,7 +1,7 @@
 // Enhanced Authentication System with Local Storage
 class AuthManager {
   constructor() {
-    this.storageKeys = {
+    this.baseStorageKeys = {
       user: 'ecospire_user',
       activities: 'ecospire_activities',
       stats: 'ecospire_stats',
@@ -10,15 +10,42 @@ class AuthManager {
     this.initializeStorage();
   }
 
+  // Get user-specific storage keys
+  getStorageKeys(userId = null) {
+    const currentUser = userId || this.getCurrentUserId();
+    if (!currentUser || currentUser === 'guest') {
+      return this.baseStorageKeys;
+    }
+    
+    return {
+      user: this.baseStorageKeys.user,
+      activities: `${this.baseStorageKeys.activities}_${currentUser}`,
+      stats: `${this.baseStorageKeys.stats}_${currentUser}`,
+      settings: `${this.baseStorageKeys.settings}_${currentUser}`
+    };
+  }
+
+  getCurrentUserId() {
+    const userData = localStorage.getItem(this.baseStorageKeys.user);
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.id;
+    }
+    return null;
+  }
+
   initializeStorage() {
     // Initialize default data if not exists
-    if (!localStorage.getItem(this.storageKeys.user)) {
+    if (!localStorage.getItem(this.baseStorageKeys.user)) {
       this.setGuestMode();
     }
-    if (!localStorage.getItem(this.storageKeys.activities)) {
-      localStorage.setItem(this.storageKeys.activities, JSON.stringify([]));
+    
+    // Initialize user-specific data
+    const keys = this.getStorageKeys();
+    if (!localStorage.getItem(keys.activities)) {
+      localStorage.setItem(keys.activities, JSON.stringify([]));
     }
-    if (!localStorage.getItem(this.storageKeys.stats)) {
+    if (!localStorage.getItem(keys.stats)) {
       this.resetStats();
     }
   }
@@ -38,7 +65,7 @@ class AuthManager {
         dataSharing: false
       }
     };
-    localStorage.setItem(this.storageKeys.user, JSON.stringify(guestUser));
+    localStorage.setItem(this.baseStorageKeys.user, JSON.stringify(guestUser));
   }
 
   resetStats() {
@@ -56,11 +83,12 @@ class AuthManager {
       level: 1,
       points: 0
     };
-    localStorage.setItem(this.storageKeys.stats, JSON.stringify(defaultStats));
+    const keys = this.getStorageKeys();
+    localStorage.setItem(keys.stats, JSON.stringify(defaultStats));
   }
 
   getCurrentUser() {
-    const userData = localStorage.getItem(this.storageKeys.user);
+    const userData = localStorage.getItem(this.baseStorageKeys.user);
     return userData ? JSON.parse(userData) : null;
   }
 
@@ -75,8 +103,14 @@ class AuthManager {
   }
 
   getUserStats() {
-    const statsData = localStorage.getItem(this.storageKeys.stats);
-    return statsData ? JSON.parse(statsData) : this.resetStats();
+    const keys = this.getStorageKeys();
+    const statsData = localStorage.getItem(keys.stats);
+    if (statsData) {
+      return JSON.parse(statsData);
+    } else {
+      this.resetStats();
+      return JSON.parse(localStorage.getItem(keys.stats));
+    }
   }
 
   updateUserStats(updates) {
@@ -103,7 +137,8 @@ class AuthManager {
       newStats.lastActivity = new Date().toISOString();
     }
 
-    localStorage.setItem(this.storageKeys.stats, JSON.stringify(newStats));
+    const keys = this.getStorageKeys();
+    localStorage.setItem(keys.stats, JSON.stringify(newStats));
     return newStats;
   }
 
@@ -125,7 +160,8 @@ class AuthManager {
       activities.splice(100);
     }
 
-    localStorage.setItem(this.storageKeys.activities, JSON.stringify(activities));
+    const keys = this.getStorageKeys();
+    localStorage.setItem(keys.activities, JSON.stringify(activities));
 
     // Update stats
     const currentStats = this.getUserStats();
@@ -137,10 +173,10 @@ class AuthManager {
     // Update specific stats based on activity type
     switch (data.type) {
       case 'water_test':
-        updates.waterTests = (currentStats.waterTests || 0) + 1;
+        updates.waterTests = (currentStats.waterTests || 0) + (data.amount || 1);
         break;
       case 'biodiversity_scan':
-        updates.biodiversityScans = (currentStats.biodiversityScans || 0) + 1;
+        updates.biodiversityScans = (currentStats.biodiversityScans || 0) + (data.amount || 1);
         break;
       case 'carbon_reduction':
         updates.carbonSaved = (currentStats.carbonSaved || 0) + (data.amount || 1);
@@ -151,6 +187,12 @@ class AuthManager {
       case 'energy_saved':
         updates.energySaved = (currentStats.energySaved || 0) + (data.amount || 1);
         break;
+      case 'tree_planted':
+        updates.treesPlanted = (currentStats.treesPlanted || 0) + (data.amount || 1);
+        break;
+      case 'general':
+        // General activities don't update specific counters but still give points
+        break;
     }
 
     this.updateUserStats(updates);
@@ -160,7 +202,8 @@ class AuthManager {
   }
 
   getActivities(limit = 50) {
-    const activities = localStorage.getItem(this.storageKeys.activities);
+    const keys = this.getStorageKeys();
+    const activities = localStorage.getItem(keys.activities);
     const allActivities = activities ? JSON.parse(activities) : [];
     return allActivities.slice(0, limit);
   }
@@ -177,32 +220,54 @@ class AuthManager {
   }
 
   checkAchievements() {
-    const stats = this.getUserStats();
-    const newAchievements = [];
-
-    // Define achievements
-    const achievements = [
-      { id: 'first_test', name: 'First Test', description: 'Complete your first water test', condition: () => stats.waterTests >= 1, icon: '💧' },
-      { id: 'bio_explorer', name: 'Bio Explorer', description: 'Complete 5 biodiversity scans', condition: () => stats.biodiversityScans >= 5, icon: '🦜' },
-      { id: 'carbon_saver', name: 'Carbon Saver', description: 'Save 10kg of CO₂', condition: () => stats.carbonSaved >= 10, icon: '🌱' },
-      { id: 'streak_week', name: 'Weekly Streak', description: 'Maintain a 7-day activity streak', condition: () => stats.streakDays >= 7, icon: '🔥' },
-      { id: 'level_up', name: 'Level Up', description: 'Reach level 5', condition: () => stats.level >= 5, icon: '⭐' },
-      { id: 'eco_champion', name: 'Eco Champion', description: 'Complete 50 activities', condition: () => stats.totalActivities >= 50, icon: '🏆' }
-    ];
-
-    achievements.forEach(achievement => {
-      if (achievement.condition() && !stats.achievements.includes(achievement.id)) {
-        newAchievements.push(achievement);
-        stats.achievements.push(achievement.id);
+    try {
+      const stats = this.getUserStats();
+      
+      // Ensure stats is valid and has required properties
+      if (!stats || typeof stats !== 'object') {
+        console.warn('Invalid stats object in checkAchievements');
+        return [];
       }
-    });
 
-    if (newAchievements.length > 0) {
-      localStorage.setItem(this.storageKeys.stats, JSON.stringify(stats));
-      return newAchievements;
+      // Ensure achievements array exists
+      if (!Array.isArray(stats.achievements)) {
+        stats.achievements = [];
+      }
+
+      const newAchievements = [];
+
+      // Define achievements
+      const achievements = [
+        { id: 'first_test', name: 'First Test', description: 'Complete your first water test', condition: () => (stats.waterTests || 0) >= 1, icon: '💧' },
+        { id: 'bio_explorer', name: 'Bio Explorer', description: 'Complete 5 biodiversity scans', condition: () => (stats.biodiversityScans || 0) >= 5, icon: '🦜' },
+        { id: 'carbon_saver', name: 'Carbon Saver', description: 'Save 10kg of CO₂', condition: () => (stats.carbonSaved || 0) >= 10, icon: '🌱' },
+        { id: 'streak_week', name: 'Weekly Streak', description: 'Maintain a 7-day activity streak', condition: () => (stats.streakDays || 0) >= 7, icon: '🔥' },
+        { id: 'level_up', name: 'Level Up', description: 'Reach level 5', condition: () => (stats.level || 1) >= 5, icon: '⭐' },
+        { id: 'eco_champion', name: 'Eco Champion', description: 'Complete 50 activities', condition: () => (stats.totalActivities || 0) >= 50, icon: '🏆' }
+      ];
+
+      achievements.forEach(achievement => {
+        try {
+          if (achievement.condition() && !stats.achievements.includes(achievement.id)) {
+            newAchievements.push(achievement);
+            stats.achievements.push(achievement.id);
+          }
+        } catch (error) {
+          console.warn(`Error checking achievement ${achievement.id}:`, error);
+        }
+      });
+
+      if (newAchievements.length > 0) {
+        const keys = this.getStorageKeys();
+        localStorage.setItem(keys.stats, JSON.stringify(stats));
+        return newAchievements;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error in checkAchievements:', error);
+      return [];
     }
-
-    return [];
   }
 
   async login(credentials) {
@@ -211,7 +276,7 @@ class AuthManager {
 
     // For demo, create a user based on email
     const user = {
-      id: credentials.email.replace('@', '_').replace('.', '_'),
+      id: credentials.email.replace('@', '_').replace(/\./g, '_'),
       name: credentials.name || credentials.email.split('@')[0],
       email: credentials.email,
       isGuest: false,
@@ -225,14 +290,41 @@ class AuthManager {
       }
     };
 
-    localStorage.setItem(this.storageKeys.user, JSON.stringify(user));
+    // Store the new user
+    localStorage.setItem(this.baseStorageKeys.user, JSON.stringify(user));
     
-    // Initialize stats for new user if needed
-    if (this.isGuestMode()) {
-      this.resetStats();
-    }
+    // Initialize user-specific data storage
+    this.initializeUserData(user.id);
 
     return { success: true, user };
+  }
+
+  initializeUserData(userId) {
+    const keys = this.getStorageKeys(userId);
+    
+    // Initialize activities if they don't exist
+    if (!localStorage.getItem(keys.activities)) {
+      localStorage.setItem(keys.activities, JSON.stringify([]));
+    }
+    
+    // Initialize stats if they don't exist
+    if (!localStorage.getItem(keys.stats)) {
+      const defaultStats = {
+        carbonSaved: 0,
+        waterTests: 0,
+        biodiversityScans: 0,
+        wasteReduced: 0,
+        energySaved: 0,
+        treesPlanted: 0,
+        totalActivities: 0,
+        streakDays: 0,
+        lastActivity: null,
+        achievements: [],
+        level: 1,
+        points: 0
+      };
+      localStorage.setItem(keys.stats, JSON.stringify(defaultStats));
+    }
   }
 
   async register(userData) {
@@ -240,7 +332,7 @@ class AuthManager {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const user = {
-      id: userData.email.replace('@', '_').replace('.', '_'),
+      id: userData.email.replace('@', '_').replace(/\./g, '_'),
       name: userData.name,
       email: userData.email,
       isGuest: false,
@@ -254,22 +346,24 @@ class AuthManager {
       }
     };
 
-    localStorage.setItem(this.storageKeys.user, JSON.stringify(user));
-    this.resetStats(); // Fresh start for new user
+    localStorage.setItem(this.baseStorageKeys.user, JSON.stringify(user));
+    
+    // Initialize fresh user data
+    this.initializeUserData(user.id);
 
     return { success: true, user };
   }
 
   async logout() {
-    // Clear all user data and reset to guest mode
-    this.setGuestMode();
-    
     // Log the logout activity before clearing
     await this.logActivity('User logged out', {
       type: 'auth',
       action: 'logout',
       points: 0
     });
+    
+    // Clear current user and reset to guest mode
+    this.setGuestMode();
     
     return { success: true };
   }
@@ -284,7 +378,7 @@ class AuthManager {
     const user = this.getCurrentUser();
     if (user) {
       const updatedUser = { ...user, ...updates };
-      localStorage.setItem(this.storageKeys.user, JSON.stringify(updatedUser));
+      localStorage.setItem(this.baseStorageKeys.user, JSON.stringify(updatedUser));
       return updatedUser;
     }
     return null;

@@ -79,7 +79,26 @@ const UpcyclingAgent = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '600px', overflowY: 'auto', paddingRight: '10px' }}>
               {filteredProjects.map(project => (
-                <div key={project.id} onClick={() => setSelectedProject(project)} style={{ padding: '15px', borderRadius: '12px', cursor: 'pointer', border: `2px solid ${selectedProject?.id === project.id ? '#4CAF50' : '#ddd'}`, background: selectedProject?.id === project.id ? '#e8f5e9' : 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                <div key={project.id} onClick={async () => {
+                  setSelectedProject(project);
+                  
+                  // Log activity when user views an upcycling project
+                  try {
+                    const { authManager } = await import('../utils/auth');
+                    await authManager.logActivity('Upcycling project viewed', {
+                      type: 'waste_reduction',
+                      projectTitle: project.title,
+                      itemType: selectedItem,
+                      difficulty: project.difficulty,
+                      co2Saved: project.environmentalImpact?.co2SavedKg || 0,
+                      points: 10,
+                      amount: project.environmentalImpact?.landfillDivertedKg || 1
+                    });
+                    console.log('✅ Upcycling project activity logged successfully');
+                  } catch (error) {
+                    console.warn('Failed to log upcycling activity:', error);
+                  }
+                }} style={{ padding: '15px', borderRadius: '12px', cursor: 'pointer', border: `2px solid ${selectedProject?.id === project.id ? '#4CAF50' : '#ddd'}`, background: selectedProject?.id === project.id ? '#e8f5e9' : 'white', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold' }}>{project.title}</h4>
                     <span style={{ padding: '4px 8px', fontSize: '0.8rem', borderRadius: '12px', background: project.difficulty === 'Easy' ? '#e8f5e9' : project.difficulty === 'Medium' ? '#fff3e0' : '#ffebee', color: project.difficulty === 'Easy' ? '#2E7D32' : project.difficulty === 'Medium' ? '#F57C00' : '#c62828' }}>

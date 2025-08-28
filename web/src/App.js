@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { systemInitializer } from './utils/systemInitializer.js';
 import { authManager } from './utils/auth.js';
+import LoadingScreen from './components/LoadingScreen';
 
 // Import all your pages
 import Dashboard from './pages/Dashboard';
@@ -33,13 +34,17 @@ import GeneticResilience from './pages/GeneticResilience';
 function App() {
   const [activePage, setActivePage] = useState('Dashboard');
   const [userStats, setUserStats] = useState({
-    co2Saved: 0,
+    carbonSaved: 0,
     waterTests: 0,
-    bioScans: 0
+    biodiversityScans: 0,
+    treesPlanted: 0,
+    wasteReduced: 0,
+    energySaved: 0
   });
   const [currentUser, setCurrentUser] = useState(null);
   const [systemReady, setSystemReady] = useState(false);
   const [systemStatus, setSystemStatus] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize advanced systems and authentication on app start
   useEffect(() => {
@@ -67,21 +72,57 @@ function App() {
     };
 
     initializeSystems();
+    
+    // Show loading screen for 2.5 seconds
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    return () => clearTimeout(loadingTimer);
   }, []);
 
   // Handle authentication changes
   const handleAuthChange = (user) => {
     setCurrentUser(user);
-    // Update user stats when auth changes
-    if (user) {
-      const stats = authManager.getUserStats();
-      setUserStats({
-        co2Saved: stats.carbonSaved || 0,
-        waterTests: stats.waterTests || 0,
-        bioScans: stats.biodiversityScans || 0
-      });
-    }
+    updateUserStats();
   };
+
+  // Update user stats from auth manager
+  const updateUserStats = () => {
+    const stats = authManager.getUserStats();
+    
+    // Only show demo stats for actual guest users, not logged-in users
+    const isGuest = currentUser?.isGuest === true;
+    const isNewGuest = isGuest && !stats.carbonSaved && !stats.waterTests && !stats.biodiversityScans;
+    
+    console.log('🔄 App.js updateUserStats called');
+    console.log('📊 Raw stats from authManager:', stats);
+    console.log('👤 Current user:', currentUser);
+    console.log('🆕 Is new guest:', isNewGuest);
+    
+    const newStats = {
+      carbonSaved: stats.carbonSaved || (isNewGuest ? 12 : 0),
+      waterTests: stats.waterTests || (isNewGuest ? 3 : 0),
+      biodiversityScans: stats.biodiversityScans || (isNewGuest ? 2 : 0),
+      treesPlanted: stats.treesPlanted || 0,
+      wasteReduced: stats.wasteReduced || 0,
+      energySaved: stats.energySaved || 0
+    };
+    
+    console.log('📈 Setting userStats to:', newStats);
+    setUserStats(newStats);
+  };
+
+  // Set up periodic stats refresh
+  useEffect(() => {
+    // Initial stats load
+    updateUserStats();
+    
+    // Refresh stats every 10 seconds (less frequent to reduce flickering)
+    const statsInterval = setInterval(updateUserStats, 10000);
+    
+    return () => clearInterval(statsInterval);
+  }, [currentUser]);
 
   const pages = [
     { 
@@ -305,22 +346,30 @@ function App() {
     updateURL(pageId);
   };
 
-  const updateUserStats = async (activity) => {
-    // Log activity through auth manager
-    await authManager.logActivity(activity.description || 'Environmental action', {
-      type: activity.type,
-      amount: activity.amount,
-      points: activity.points || 10
-    });
-
-    // Update local stats display
-    const updatedStats = authManager.getUserStats();
-    setUserStats({
-      co2Saved: updatedStats.carbonSaved || 0,
-      waterTests: updatedStats.waterTests || 0,
-      bioScans: updatedStats.biodiversityScans || 0
-    });
+  // Handle activity completion to update stats immediately
+  const handleActivityComplete = async (activity) => {
+    console.log('🎯 App.js handleActivityComplete called with:', activity);
+    
+    // Log activity through auth manager if activity data is provided
+    if (activity && activity.type) {
+      console.log('📝 Logging activity through authManager...');
+      await authManager.logActivity(activity.description || 'Environmental action', {
+        type: activity.type,
+        amount: activity.amount,
+        points: activity.points || 10
+      });
+      console.log('✅ Activity logged successfully');
+    }
+    
+    // Update stats display
+    console.log('🔄 Calling updateUserStats after activity completion...');
+    updateUserStats();
   };
+
+  // Show loading screen first
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="terra-app">
@@ -416,7 +465,7 @@ function App() {
               <div className="header-stat">
                 <span>🌿</span>
                 <div>
-                  <div>{Math.round(userStats.co2Saved)}</div>
+                  <div>{Math.round(userStats.carbonSaved)}</div>
                   <div>CO₂ Saved (kg)</div>
                 </div>
               </div>
@@ -430,31 +479,19 @@ function App() {
               <div className="header-stat">
                 <span>🦜</span>
                 <div>
-                  <div>{userStats.bioScans}</div>
+                  <div>{userStats.biodiversityScans}</div>
                   <div>Bio Scans</div>
                 </div>
               </div>
+              <div className="header-stat">
+                <span>🌳</span>
+                <div>
+                  <div>{userStats.treesPlanted}</div>
+                  <div>Trees Planted</div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                background: 'linear-gradient(135deg, #2196F3 0%, #21CBF3 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '20px',
-                fontSize: '0.9rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                marginLeft: '15px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-              title="Refresh current page"
-            >
-              🔄 Refresh
-            </button>
+
           </div>
         </div>
 
@@ -462,7 +499,7 @@ function App() {
         <div className="terra-content">
           <CurrentComponent 
             onNavigate={handlePageChange} 
-            onActivityComplete={updateUserStats}
+            onActivityComplete={handleActivityComplete}
             onAuthChange={handleAuthChange}
             userStats={userStats}
             currentUser={currentUser}

@@ -293,6 +293,50 @@ const FloraShield = () => {
         capabilities="🤖 AI Species Detection • 🗺️ Community Threat Mapping • 🌱 Native Alternatives"
       />
 
+      {/* Prototype Disclaimer */}
+      <div className="card" style={{
+        marginBottom: '30px',
+        background: '#fff3e0',
+        border: '1px solid #ffb74d',
+        borderLeft: '4px solid #ff9800'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ 
+            fontSize: '1.5rem', 
+            color: '#ff9800',
+            marginTop: '2px'
+          }}>
+            ⚠️
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ 
+              color: '#e65100', 
+              marginBottom: '8px',
+              fontSize: '1.1rem',
+              fontWeight: '600'
+            }}>
+              Prototype Demonstration
+            </h4>
+            <p style={{ 
+              fontSize: '0.95rem', 
+              lineHeight: '1.5', 
+              color: '#bf360c',
+              marginBottom: '8px'
+            }}>
+              <strong>This tool uses simulated data for demonstration purposes.</strong>
+            </p>
+            <p style={{ 
+              fontSize: '0.85rem', 
+              color: '#8d4e00', 
+              lineHeight: '1.4'
+            }}>
+              All plant identification, threat assessments, and species data are generated examples. 
+              Production version would integrate with real botanical databases and expert validation systems.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Problem Statement */}
       <ProblemSolutionCard
         type="problem"
